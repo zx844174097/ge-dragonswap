@@ -17,6 +17,7 @@ import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
@@ -35,7 +36,6 @@ public class DGCertTokenOutTask extends TaskImpl {
 
 	@Override
 	public void run() {
-		dao.createTable(DGKeepTranLogBean.class);
 		while (true) {
 			try {
 				handle();
@@ -122,10 +122,21 @@ public class DGCertTokenOutTask extends TaskImpl {
 
 	public void outToken(String to_address, String token, String symbol, BigDecimal num, String block_name) {
 		DGKeepTranLogBean dgKeepTranLogBean = new DGKeepTranLogBean().setDg_symbol(symbol).setToken_address(to_address).setTo_address(to_address).setAmount(num);
+		
+		DGKeepTranLogBean last=dao.select(new DGKeepTranLogBean().setDg_symbol(symbol));
+		BigDecimal last_big=BigDecimal.ZERO;
+		if(last!=null) {
+			last_big=last.getNow_out_cert_token_num();
+		}
+		DGSymbolConfBean select = dao.select(new DGSymbolConfBean().setContract_address(token).setBlock_name(block_name));
+		dgKeepTranLogBean.setToken_name(select.getSymbol());
+		dgKeepTranLogBean.setLast_out_cert_token_num(last_big);
+		dgKeepTranLogBean.setNow_out_cert_token_num(last_big.add(num));
 		dgKeepTranLogBean.setLog_type(DGKeepTranLogBean.log_type_0);
 		dgKeepTranLogBean.setLog_status(DGKeepTranLogBean.log_status_0);
 		dgKeepTranLogBean.setBlock(block_name);
 		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
+		
 		add(dgKeepTranLogBean);
 	}
 

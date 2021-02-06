@@ -8,8 +8,11 @@ import com.mugui.spring.base.Manager;
 import com.mugui.spring.net.auto.AutoManager;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolCreateBean;
@@ -32,6 +35,7 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 	public boolean init(Object object) {
 		super.init(object);
 		dao.createTable(DGKeepBean.class);
+		dao.createTable(DGKeepTranLogBean.class);
 		dao.createTable(DGSymbolCreateBean.class);
 		dao.createTable(DGSymbolBean.class);
 		dao.createTable(DGSymbolDescriptBean.class);
@@ -39,6 +43,8 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 		dao.createTable(DGSymbolConfBean.class);
 		dao.createTable(DGPriAddressBean.class);
 		dao.createTable(DGAddressBindBean.class);
+		dao.createTable(DGConfBean.class);
+		dao.createTable(DGQuotes.class);
 		BlockManager.init(object);
 		List<DGSymbolBean> selectList = dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1));
 		for (DGSymbolBean dgSymbolBean : selectList) {

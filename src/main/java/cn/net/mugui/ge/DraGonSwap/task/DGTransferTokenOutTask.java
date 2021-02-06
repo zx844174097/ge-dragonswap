@@ -12,6 +12,7 @@ import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.util.Other;
 
+import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
@@ -84,26 +85,26 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	}
 
 	private boolean isSucess(DGTranLogBean poll) {
-		return blockservice.isSucess(poll.getBlock(), poll.getHash());
+		return blockservice.isSucess(poll.getTo_block(), poll.getTo_hash());
 	}
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		blockservice.broadcastTran(poll.getBlock(), poll.get().getString("broadcast"));
+		blockservice.broadcastTran(poll.getTo_block(), poll.get().getString("broadcast"));
 		return;
 	}
 
 	private void send(DGTranLogBean poll) {
 		add(poll);
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getBlock(), manager.get(poll.getDg_symbol()).pri_cert.getPri(), poll.getTo_address(), poll.getAmount(), poll.getToken_address());
+		Message sendTran = blockservice.getSendTran(poll.getTo_block(), manager.get(poll.getDg_symbol()).pri_cert.getPri(), poll.getTo_address(), poll.getTo_num(), poll.getTo_token());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
 		poll.get().put("broadcast", sendTran.getDate().toString());
-		Message broadcastTran = blockservice.broadcastTran(poll.getBlock(), sendTran.getDate().toString());// 广播
+		Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate().toString());// 广播
 		// 无论成功与否都修改为以转出
-		poll.setHash(broadcastTran.getDate().toString());
+		poll.setTo_hash(broadcastTran.getDate().toString());
 		poll.setLog_status(DGTranLogBean.log_status_1);
 		dao.updata(poll);
 	}
@@ -115,16 +116,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private ConcurrentLinkedDeque<DGTranLogBean> linkedList = new ConcurrentLinkedDeque<>();
 
-	public void outToken(String to_address, String token, String symbol, BigDecimal num,String block_name) {
-		DGTranLogBean dgKeepTranLogBean = new DGTranLogBean().setDg_symbol(symbol).setToken_address(to_address).setTo_address(to_address).setAmount(num);
-
-		dgKeepTranLogBean.setLog_status(DGTranLogBean.log_status_0);
-		dgKeepTranLogBean.setBlock(block_name);
-		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
-		add(dgKeepTranLogBean);
-	}
-
-	void add(DGTranLogBean logBean) {
+	public void add(DGTranLogBean logBean) {
 		synchronized (this) {
 			linkedList.add(logBean);
 			this.notifyAll();

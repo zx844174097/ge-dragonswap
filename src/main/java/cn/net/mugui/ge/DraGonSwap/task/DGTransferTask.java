@@ -22,6 +22,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
@@ -88,34 +89,52 @@ public class DGTransferTask extends TaskImpl {
 				if (dgSymbol.getSymbol_status() != DGSymbolBean.SYMBOL_STATUS_1) {
 					continue;
 				}
+				DGTranLogBean log = new DGTranLogBean();
+				log.setFrom_address(blockChainBean.getFrom_address());
+				log.setFrom_block(blockChainBean.getBc_block());
+				log.setDg_symbol(dgSymbol.getSymbol());
+				log.setFrom_hash(blockChainBean.getReal_hash());
+				log.setFrom_token(blockChainBean.getContract_address());
+				log.setFrom_token_name(blockChainBean.getBc_type_name());
+				log.setFrom_num(blockChainBean.getBc_amount());
 
 				BigDecimal bc_amount = blockChainBean.getBc_amount();
 
 				if (blockChainBean.bc_type_name.equals(dgSymbol.getBase_currency())) {// 以基本金额入金
 
 					if (dgSymbol.getBase_min_amt().compareTo(bc_amount) < 0) {
-						throw new RuntimeException("入金" + dgSymbol.getBase_currency() + "量：" + bc_amount + " 关于交易对：" + dgSymbol.getSymbol() + "过低");
+						log.setLog_status(DGTranLogBean.log_status_3);
+						log.setLog_detail("入金" + dgSymbol.getBase_currency() + "量：" + bc_amount + "过低");
+						log = dao.save(log);
+						continue;
 					}
 					if (dgSymbol.getBase_max_amt().compareTo(bc_amount) < 0) {
 						bc_amount = dgSymbol.getBase_max_amt();
 					}
+					log.setFrom_num(bc_amount);
 
 					DGSymbolConfBean select = dao.select(new DGSymbolConfBean().setSymbol(dgSymbol.getQuote_currency()));
-					
+
 					BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
-					
+
 					String block_name = select.getBlock_name();
 					String blockAddress = addressBindUtil.toBlockAddress(blockChainBean.getFrom_address(), block_name);
-
-					transfer.outToken(blockAddress, select.getContract_address(), dgSymbol.getSymbol(), inBase, block_name);
-
+					log.setTo_address(blockAddress);
+					log.setTo_block(block_name);
+					log.setTo_num(inBase);
+					log.setTo_token_name(select.getSymbol());
+					log.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
 				} else {// 以计价金额入金
 					if (dgSymbol.getQuote_min_amt().compareTo(bc_amount) < 0) {
-						throw new RuntimeException("入金" + dgSymbol.getBase_currency() + "量：" + bc_amount + " 关于交易对：" + dgSymbol.getSymbol() + "过低");
+						log.setLog_status(DGTranLogBean.log_status_3);
+						log.setLog_detail("入金" + dgSymbol.getQuote_currency() + "量：" + bc_amount + "过低");
+						log = dao.save(log);
+						continue;
 					}
 					if (dgSymbol.getQuote_max_amt().compareTo(bc_amount) < 0) {
 						bc_amount = dgSymbol.getQuote_max_amt();
 					}
+					log.setFrom_num(bc_amount);
 
 					DGSymbolConfBean select = dao.select(new DGSymbolConfBean().setSymbol(dgSymbol.getBase_currency()));
 
@@ -123,10 +142,14 @@ public class DGTransferTask extends TaskImpl {
 
 					String block_name = select.getBlock_name();
 					String blockAddress = addressBindUtil.toBlockAddress(blockChainBean.getFrom_address(), block_name);
-
-					transfer.outToken(blockAddress, select.getContract_address(), dgSymbol.getSymbol(), inQuote, block_name);
-
+					log.setTo_address(blockAddress);
+					log.setTo_block(block_name);
+					log.setTo_num(inQuote);
+					log.setTo_token_name(select.getSymbol());
+					log.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
 				}
+				log = dao.save(log);
+				transfer.add(log);
 
 			}
 

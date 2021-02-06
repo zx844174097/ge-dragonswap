@@ -11,9 +11,14 @@ import com.mugui.spring.base.Module;
 import com.mugui.spring.net.authority.Authority;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.spring.net.bean.NetBag;
+import com.mugui.spring.net.dblistener.PageUtil;
+import com.mugui.sql.loader.Select;
+import com.mugui.sql.loader.Where;
 
+import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
@@ -59,7 +64,7 @@ public class Symbol implements Mugui {
 			JSONArray select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
 
 			jsonObject.put("base", select);
-			 select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
+			select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
 			jsonObject.put("quotes", select);
 
 			SwapBean swapBean = manager.get(dgSymbolBean.getSymbol());
@@ -83,6 +88,27 @@ public class Symbol implements Mugui {
 		object.put("cert_address", cert_address);
 		return Message.ok(object);
 
+	}
+
+	/**
+	 * K线图
+	 * 
+	 * @param bag
+	 * @return
+	 */
+	public Message kLine(NetBag bag) {
+		DGQuotes newBean = DGQuotes.newBean(DGQuotes.class, bag.getData());
+		if (StringUtils.isBlank(newBean.getQ_market())) {
+			return Message.error("参数错误");
+		}
+		PageUtil.offsetPage(bag);
+		Integer quotes_id = newBean.getQuotes_id();
+		if (quotes_id != null) {
+			newBean.setQuotes_id(null);
+			Select where = Select.q(newBean).where(Where.q(newBean).ge("quotes_id", quotes_id));
+			return Message.ok(dao.selectArray(DGQuotes.class, where));
+		}
+		return Message.ok(dao.selectArrayDESC(newBean));
 	}
 
 }
