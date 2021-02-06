@@ -17,6 +17,7 @@ import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
@@ -84,6 +85,9 @@ public class Symbol implements Mugui {
 			return Message.error("参数错误");
 		}
 		String my_block = dgSymbolBean.get().getString("my_block");
+		if (StringUtils.isBlank(my_block)) {
+			return Message.error("参数错误");
+		}
 		String tran_address = priAddressCache.get(dgSymbolBean.getSymbol() + "_0_" + my_block);
 		String cert_address = priAddressCache.get(dgSymbolBean.getSymbol() + "_1_" + my_block);
 		JSONObject object = new JSONObject();
@@ -91,6 +95,35 @@ public class Symbol implements Mugui {
 		object.put("cert_address", cert_address);
 		return Message.ok(object);
 
+	}
+
+	/**
+	 * 得到某交易对的基本描述
+	 * 
+	 * @param bag
+	 * @return
+	 */
+	public Message base(NetBag bag) {
+		DGSymbolBean dgSymbolBean = DGSymbolBean.newBean(DGSymbolBean.class, bag.getData());
+		if (StringUtils.isBlank(dgSymbolBean.getSymbol())) {
+			return Message.error("参数错误");
+		}
+		SwapBean swapBean = manager.get(dgSymbolBean.getSymbol());
+		if(swapBean==null) {
+			return Message.error("参数错误");
+		}
+		JSONObject jsonObject = swapBean.symbol.get();
+		jsonObject.putAll(swapBean.symbol_des.get());
+		DGQuotes select = dao.select(new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4));
+		if (select != null) {
+			jsonObject.putAll(select.get());
+		}
+		DGKeepTranLogBean dgKeepTranLogBean = new DGKeepTranLogBean().setDg_symbol(dgSymbolBean.getSymbol());
+		DGKeepTranLogBean select2 = dao.select(dgKeepTranLogBean);
+		if (select2 != null) {
+			jsonObject.putAll(select2.get());
+		}
+		return Message.ok(jsonObject);
 	}
 
 	/**
