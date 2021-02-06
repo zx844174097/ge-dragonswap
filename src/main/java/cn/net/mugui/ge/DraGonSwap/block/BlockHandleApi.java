@@ -58,5 +58,11 @@ public interface BlockHandleApi {
 	 * @return
 	 */
 	String getAddressByPri(String pri);
+	/**
+	 * 通过公钥得到地址
+	 * @param pub
+	 * @return
+	 */
+	String getAddressByPub(String pub);
 
 }

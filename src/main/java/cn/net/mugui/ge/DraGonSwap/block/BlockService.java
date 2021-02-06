@@ -26,7 +26,7 @@ public class BlockService {
 	public Message getSendTran(String block_name, String pri, String to_address, BigDecimal amount, String token_address) {
 		BlockHandleApi blockHandleApi = getBlockHandleApi(block_name);
 		try {
-			
+
 			return Message.ok(blockHandleApi.getSendTran(pri, to_address, amount, token_address));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -62,4 +62,20 @@ public class BlockService {
 			return false;
 		}
 	}
+
+	/**
+	 * 通过公钥得到地址
+	 * 
+	 * @param block_name
+	 * @param pub
+	 * @return
+	 */
+	public String getAddressByPub(String block_name, String pub) {
+		try {
+			return getBlockHandleApi(block_name).getAddressByPub(pub);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

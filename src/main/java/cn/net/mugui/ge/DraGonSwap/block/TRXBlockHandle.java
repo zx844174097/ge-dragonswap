@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.spring.util.HTTPUtil;
 
+import cn.net.mugui.ge.block.tron.TRC20.Address;
 import cn.net.mugui.ge.block.tron.TRC20.ApiResult;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Credential;
@@ -74,10 +75,10 @@ public class TRXBlockHandle implements BlockHandleApi {
 	public String encode58Check(byte[] input) {
 		byte[] hash0 = Hash.sha256(input);
 		byte[] hash1 = Hash.sha256(hash0);
-		byte[] inputCheck = new byte[input.length + 4+1];
+		byte[] inputCheck = new byte[input.length + 4 + 1];
 		System.arraycopy(Hex.decode("41"), 0, inputCheck, 0, 1);
 		System.arraycopy(input, 0, inputCheck, 1, input.length);
-		System.arraycopy(hash1, 0, inputCheck, input.length+1, 4);
+		System.arraycopy(hash1, 0, inputCheck, input.length + 1, 4);
 		return Base58.encode(inputCheck);
 	}
 
@@ -112,12 +113,17 @@ public class TRXBlockHandle implements BlockHandleApi {
 	@Override
 	public String getAddressByPri(String pri) {
 		TempBean tempBean = map.get(pri);
-		if (tempBean == null) { 
+		if (tempBean == null) {
 			tempBean = new TempBean();
 			tempBean.credential = Credential.fromPrivateKey(pri);
 			tempBean.address = encode58Check(ECKey.fromPrivate(Hex.decode(pri)).getAddress());
 		}
 		return tempBean.address;
+	}
+
+	@Override
+	public String getAddressByPub(String pub) {
+		return Address.fromPublicKey(pub).base58;
 	}
 
 }

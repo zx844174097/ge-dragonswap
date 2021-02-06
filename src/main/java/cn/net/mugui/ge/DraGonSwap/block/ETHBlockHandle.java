@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import com.mugui.spring.net.bean.Message;
 
 @Component
-public class BTCBlockHandle  implements BlockHandleApi {
+public class ETHBlockHandle implements BlockHandleApi{
 
 	@Override
 	public void init() {
@@ -17,7 +17,8 @@ public class BTCBlockHandle  implements BlockHandleApi {
 
 	@Override
 	public String name() {
-		return "BTC";
+		// TODO Auto-generated method stub
+		return "ETH";
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package cn.net.mugui.ge.DraGonSwap.app;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -15,12 +16,14 @@ import com.mugui.spring.net.dblistener.PageUtil;
 import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 
+import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
+import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DGPriAddressCache;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
@@ -109,6 +112,54 @@ public class Symbol implements Mugui {
 			return Message.ok(dao.selectArray(DGQuotes.class, where));
 		}
 		return Message.ok(dao.selectArrayDESC(newBean));
+	}
+
+	@Autowired
+	private BlockService blockService;
+
+	/**
+	 * 提交公钥
+	 * 
+	 * @param bag
+	 * @return
+	 */
+	@Transactional
+	public Message push_pub_key(NetBag bag) {
+		JSONObject data = (JSONObject) bag.getData();
+		String public_key_eth = data.getString("public_key_eth");
+		String public_key_btc = data.getString("public_key_btc");
+		if (StringUtils.isBlank(public_key_btc) || StringUtils.isBlank(public_key_eth)) {
+			return Message.error("参数错误");
+		}
+		DGAddressBindBean dgAddressBindBean = new DGAddressBindBean();
+		dgAddressBindBean.setPub(public_key_eth);
+		if (dao.select(dgAddressBindBean) == null) {
+			dgAddressBindBean.setBlock_name("Tron");
+			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(), dgAddressBindBean.getPub());
+			dgAddressBindBean.setAddress(addressByPub);
+			dgAddressBindBean.setDatum_address(addressByPub);
+			dgAddressBindBean = dao.save(dgAddressBindBean);
+
+			DGAddressBindBean ETH = new DGAddressBindBean();
+			ETH.setPub(public_key_eth);
+			ETH.setBlock_name("ETH");
+			addressByPub = blockService.getAddressByPub(ETH.getBlock_name(), ETH.getPub());
+			ETH.setAddress(addressByPub);
+			ETH.setDatum_address(dgAddressBindBean.getAddress());
+			ETH = dao.save(dgAddressBindBean);
+
+		}
+
+		DGAddressBindBean BTC = new DGAddressBindBean();
+		BTC.setPub(public_key_btc);
+		if (dao.select(BTC) == null) {
+			BTC.setBlock_name("ETH");
+			String addressByPub = blockService.getAddressByPub(BTC.getBlock_name(), BTC.getPub());
+			BTC.setAddress(addressByPub);
+			BTC.setDatum_address(dgAddressBindBean.getAddress());
+			BTC = dao.save(dgAddressBindBean);
+		}
+		return Message.ok();
 	}
 
 }
