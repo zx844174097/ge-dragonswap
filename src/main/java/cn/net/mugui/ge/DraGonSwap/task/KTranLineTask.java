@@ -117,7 +117,7 @@ public class KTranLineTask extends TaskImpl {
 			}
 			String[] split = dgQuotes.getQ_market().split("[/]");
 			dgQuotes.setQ_symbol_l(split[0]);
-			dgQuotes.setQ_symbol_l(split[1]);
+			dgQuotes.setQ_symbol_r(split[1]); 
 			dgQuotes.setQ_amount(BigDecimal.ZERO);
 			dgQuotes.setQ_vol(BigDecimal.ZERO);
 			dgQuotes.setQ_count(0);

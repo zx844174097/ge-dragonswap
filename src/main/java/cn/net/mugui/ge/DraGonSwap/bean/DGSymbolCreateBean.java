@@ -51,15 +51,18 @@ public class DGSymbolCreateBean extends JsonBean {
 	/**
 	 * 创建初始价格(1个基础币种价值多少报价币种)
 	 */
+	@SQLField
 	private BigDecimal create_init_price;
 	/**
 	 * 基础币种数量
 	 */
+	@SQLField
 	private BigDecimal base_init_number;
 
 	/**
 	 * 报价币种数量
 	 */
+	@SQLField
 	private BigDecimal quote_init_number;
 	/**
 	 * 合计数量

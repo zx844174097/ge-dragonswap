@@ -116,16 +116,16 @@ public class SymbolAdmin implements Mugui {
 	 */
 	@Transactional
 	public Message updateStatus(NetBag bag) {
-		DGSymbolBean dgSymbolBean = DGSymbolBean.newBean(DGSymbolBean.class, bag.getData());
-		if (dgSymbolBean.getDg_symbol_id() == null || dgSymbolBean.getSymbol_status() == null) {
+		DGSymbolBean input_dg = DGSymbolBean.newBean(DGSymbolBean.class, bag.getData());
+		if (input_dg.getDg_symbol_id() == null || input_dg.getSymbol_status() == null) {
 			return Message.error("参数错误");
 		}
-		dgSymbolBean = dao.select(new DGSymbolBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id()));
+		DGSymbolBean dgSymbolBean = dao.select(new DGSymbolBean().setDg_symbol_id(input_dg.getDg_symbol_id()));
 		if (dgSymbolBean == null) {
 			return Message.error("参数错误");
 		}
 
-		switch (dgSymbolBean.getSymbol_status()) {
+		switch (input_dg.getSymbol_status()) {
 		case DGSymbolBean.SYMBOL_STATUS_0:
 		case DGSymbolBean.SYMBOL_STATUS_2:
 		case DGSymbolBean.SYMBOL_STATUS_3:
@@ -138,8 +138,8 @@ public class SymbolAdmin implements Mugui {
 				DGSymbolCreateBean createBean = new DGSymbolCreateBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
 				createBean = dao.select(createBean);
 				if (createBean.getToken_address() == null) {
-					createBean.setToken_address(dgSymbolBean.get().getString("token_address"));
-					BigDecimal bigDecimal = dgSymbolBean.get().getBigDecimal("token_total_num");
+					createBean.setToken_address(input_dg.get().getString("token_address"));
+					BigDecimal bigDecimal = input_dg.get().getBigDecimal("token_total_num");
 					if (bigDecimal == null) {
 						createBean.setToken_total_num(new BigDecimal("10000000000"));
 					} else {
@@ -158,19 +158,21 @@ public class SymbolAdmin implements Mugui {
 
 				descriptBean.setReverse_scale(BigDecimal.ONE.divide(descriptBean.getScale(), select.getPrecision(), BigDecimal.ROUND_HALF_UP));
 				descriptBean = dao.save(descriptBean);
-				manager.update(descriptBean.getDg_symbol_id());
+				bag.setRet_data(descriptBean.getDg_symbol_id());
+				dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
+				dao.updata(dgSymbolBean);
 				return Message.ok("更新成功");
 			}
-			manager.update(descriptBean.getDg_symbol_id());
-			return Message.error("已上架，无法上架");
+			bag.setRet_data(descriptBean.getDg_symbol_id());
+			dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
+			dao.updata(dgSymbolBean);
+			return Message.ok("已上架，无法上架");
 
 		default:
 			return Message.error("参数错误");
 		}
 		return Message.ok("更新成功");
 	}
-	@Autowired
-	private DSymbolManager manager;
 	/**
 	 * 交易对列表
 	 * 
