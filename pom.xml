@@ -16,7 +16,7 @@
 	<description>ge矿机主项目</description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>1.8</java.version><maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
 	</properties>
 
 	<dependencies>

@@ -3,15 +3,18 @@ package cn.net.mugui.ge.DraGonSwap.block;
 import java.math.BigDecimal;
 
 import org.springframework.stereotype.Component;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.core.methods.response.Transaction;
 
 import com.mugui.spring.net.bean.Message;
+
+import cn.net.mugui.ge.block.btc.BtcBlock;
 
 @Component
 public class BTCBlockHandle  implements BlockHandleApi {
 
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -22,32 +25,35 @@ public class BTCBlockHandle  implements BlockHandleApi {
 
 	@Override
 	public Object getSendTran(String pri, String to_address, BigDecimal amount, String token_address) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		String string = btcblock.signTran(to_address, pri, amount, token_address, null);
+		return string;
 	}
 
 	@Override
 	public boolean isSucess(String hash) throws Exception {
-		// TODO Auto-generated method stub
+	
 		return false;
 	}
 
 	@Override
 	public Message broadcastTran(String send_msg) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		String transactionHash =  btcblock.getSendTransaction(send_msg);
+		if (transactionHash == null) {
+			return Message.error("交易失败");
+		}
+		return Message.ok(transactionHash, "交易成功");
 	}
 
+
+	BtcBlock btcblock=new BtcBlock();
 	@Override
 	public String getAddressByPri(String pri) {
-		// TODO Auto-generated method stub
-		return "未实现";
+		return btcblock.toAddress(pri);
 	}
 
 	@Override
 	public String getAddressByPub(String pub) {
-		// TODO Auto-generated method stub
-		return "未实现";
+		return btcblock.toAddressByPub(pub);
 	}
 
 }
