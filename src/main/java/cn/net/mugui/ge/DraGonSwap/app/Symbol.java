@@ -1,5 +1,8 @@
 package cn.net.mugui.ge.DraGonSwap.app;
 
+import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,12 +25,14 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
+import cn.net.mugui.ge.DraGonSwap.bean.PushRemarkBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DGPriAddressCache;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
+import cn.net.mugui.ge.util.RedisUtil;
 
 @Authority(true)
 @Component
@@ -62,7 +67,8 @@ public class Symbol implements Mugui {
 	public Message list(NetBag bag) {
 		JSONArray array = new JSONArray();
 
-		for (DGSymbolBean dgSymbolBean : dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
+		for (DGSymbolBean dgSymbolBean : dao
+				.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
 			JSONObject jsonObject = dgSymbolBean.get();
 
 			JSONArray select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
@@ -109,7 +115,7 @@ public class Symbol implements Mugui {
 			return Message.error("参数错误");
 		}
 		SwapBean swapBean = manager.get(dgSymbolBean.getSymbol());
-		if(swapBean==null) {
+		if (swapBean == null) {
 			return Message.error("参数错误");
 		}
 		JSONObject jsonObject = swapBean.symbol.get();
@@ -168,7 +174,8 @@ public class Symbol implements Mugui {
 		dgAddressBindBean.setPub(public_key_eth);
 		if (dao.select(dgAddressBindBean) == null) {
 			dgAddressBindBean.setBlock_name("Tron");
-			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(), dgAddressBindBean.getPub());
+			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(),
+					dgAddressBindBean.getPub());
 			dgAddressBindBean.setAddress(addressByPub);
 			dgAddressBindBean.setDatum_address(addressByPub);
 			dgAddressBindBean = dao.save(dgAddressBindBean);
@@ -195,4 +202,37 @@ public class Symbol implements Mugui {
 		return Message.ok();
 	}
 
+	@Autowired
+	RedisUtil redis;
+
+	/**
+	 * 提交交易备注
+	 * 
+	 * @param bag
+	 * @return
+	 */
+	@Transactional
+	public Message push_remark(NetBag bag) {
+		PushRemarkBean newBean = PushRemarkBean.newBean(PushRemarkBean.class, bag.getData());
+		String hash = newBean.getHash();
+		if (StringUtils.isBlank(hash)) {
+			return Message.error("参数错误");
+		}
+		switch (newBean.getType()) {// 备注类型 0: tran 1:cert
+		case 0:
+			if (newBean.getLimit_time() > 10000) {
+				return Message.error("参数错误");
+			}
+			if (newBean.getLimit_min().compareTo(BigDecimal.ZERO) <= 0) {
+				return Message.error("参数错误");
+			}
+			redis.addRedisByTime("wait_" + hash, newBean.toString(), 3, TimeUnit.DAYS);
+			break;
+		case 1:
+			break;
+		default:
+			return Message.error("参数错误");
+		}
+		return Message.ok();
+	}
 }
