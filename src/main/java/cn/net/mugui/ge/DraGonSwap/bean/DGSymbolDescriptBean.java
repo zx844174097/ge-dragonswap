@@ -64,6 +64,10 @@ public class DGSymbolDescriptBean extends JsonBean {
 	 */
 	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "0")
 	private BigDecimal reverse_scale;
+	
+	@SQLField(DEFAULT=true,DEFAULT_text="0.01")
+	private BigDecimal fee_scale;
+	
 
 	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "CURRENT_TIMESTAMP")
 	private Date symbol_descript_create_time;
