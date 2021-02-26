@@ -116,7 +116,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 		if (tempBean == null) {
 			tempBean = new TempBean();
 			tempBean.credential = Credential.fromPrivateKey(pri);
-			tempBean.address = encode58Check(ECKey.fromPrivate(Hex.decode(pri)).getAddress());
+			tempBean.address =tempBean.credential.getAddress().base58;
 		}
 		return tempBean.address;
 	}
