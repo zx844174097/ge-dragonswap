@@ -172,6 +172,9 @@ public class TRXTranLogTask extends TaskImpl {
 		}
 
 		long lastBlock = blockHandleApi.getLastBlock();
+		if(lastBlock<Integer.parseInt(value) ) {
+			return;
+		}
 		conf.setValue(getName() + "_tran_log_index", lastBlock + "");
 		int corePoolSize = TRON_SCAN_TASK.getCorePoolSize();
 		for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
