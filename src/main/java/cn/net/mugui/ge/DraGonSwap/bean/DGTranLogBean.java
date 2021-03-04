@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @Accessors(chain = true)
-@SQLDB(TABLE = "dg_keep_log", KEY = "tran_log_id")
+@SQLDB(TABLE = "dg_tran_log", KEY = "tran_log_id")
 public class DGTranLogBean extends JsonBean {
 
 	@SQLField(PRIMARY_KEY = true, AUTOINCREMENT = true)
@@ -61,36 +61,43 @@ public class DGTranLogBean extends JsonBean {
 	/**
 	 * 去向公链
 	 */
+	@SQLField
 	private String to_block;
 
 	/**
 	 * 去向地址
 	 */
+	@SQLField
 	private String to_address;
 
 	/**
 	 * 去向token
 	 */
+	@SQLField
 	private String to_token;
 
 	/**
 	 * 去向token名称
 	 */
+	@SQLField
 	private String to_token_name;
 
 	/**
 	 * 去向数量
 	 */
+	@SQLField
 	private BigDecimal to_num;
 
 	/**
 	 * 去向hash
 	 */
+	@SQLField
 	private String to_hash;
 
 	/**
 	 * 兑换比例 （1个基本币种可兑换多少个计价币种）
 	 */
+	@SQLField
 	private BigDecimal scale;
 
 	/**
@@ -116,7 +123,7 @@ public class DGTranLogBean extends JsonBean {
 	/**
 	 * 状态
 	 */
-	@SQLField
+	@SQLField(DEFAULT = true, DEFAULT_text = "0")
 	private Integer log_status;
 
 	/**

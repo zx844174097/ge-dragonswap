@@ -61,27 +61,27 @@ public class DGTransferTokenOutTask extends TaskImpl {
 						}
 					}
 				}
-
-				switch (poll.getLog_status()) {
-				case DGTranLogBean.log_status_0:
-					send(poll);
-					break;
-
-				case DGTranLogBean.log_status_1:
-					// 判断交易是否成功
-					if (isSucess(poll)) {
-						poll.setLog_status(DGTranLogBean.log_status_2);
-						dao.updata(poll);
-						break;
-					}
-					broadcastTran(poll);
-					break;
-				default:
-					break;
-				}
 			}
 
+			switch (poll.getLog_status()) {
+			case DGTranLogBean.log_status_0:
+				send(poll);
+				break;
+
+			case DGTranLogBean.log_status_1:
+				// 判断交易是否成功
+				if (isSucess(poll)) {
+					poll.setLog_status(DGTranLogBean.log_status_2);
+					dao.updata(poll);
+					break;
+				}
+				broadcastTran(poll);
+				break;
+			default:
+				break;
+			}
 		}
+
 	}
 
 	private boolean isSucess(DGTranLogBean poll) {

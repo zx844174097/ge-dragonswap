@@ -20,6 +20,7 @@ import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
 
+import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
@@ -30,6 +31,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
+import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.DraGonSwap.util.AddressBindUtil;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolDescriptUtil;
 import cn.net.mugui.ge.sys.service.SysConfApi;
@@ -56,11 +58,8 @@ public class DGCertTask extends TaskImpl {
 		}
 	}
 
-	@Reference
-	private SysConfApi sysConfApi;
-
-	@Reference(group = "ge")
-	private SqlModeApi sqlModeApi;
+	@Autowired
+	private DGConf sysConfApi;
 
 	@Autowired
 	private DGDao dao;
@@ -83,10 +82,10 @@ public class DGCertTask extends TaskImpl {
 			if (!Other.isInteger(value)) {
 				return;
 			}
-			List<BlockChainTransactionBean> selectList = sqlModeApi.selectList(BlockChainTransactionBean.class, Select.q(new BlockChainTransactionBean()).where(Where.q().gt("bc_tran_id", value)));
-			for (BlockChainTransactionBean blockChainBean : selectList) {
-				sysConfApi.setValue("dg_cert_handle_index", blockChainBean.getBc_tran_id().toString());
-				DGPriAddressBean dgPriAddressBean = new DGPriAddressBean().setAddress(blockChainBean.getTo_address());
+			List<BlockTranBean> selectList = dao.selectList(BlockTranBean.class, Select.q(new BlockTranBean()).where(Where.q().gt("tran_id", value)));
+			for (BlockTranBean blockChainBean : selectList) {
+				sysConfApi.setValue("dg_cert_handle_index", blockChainBean.getTran_id().toString());
+				DGPriAddressBean dgPriAddressBean = new DGPriAddressBean().setAddress(blockChainBean.getTo());
 				dgPriAddressBean = dao.select(dgPriAddressBean);
 				if (dgPriAddressBean == null) {
 					continue;
@@ -105,7 +104,7 @@ public class DGCertTask extends TaskImpl {
 
 				// 为用户创建流动性凭证
 				DGKeepBean dgKeepBean = new DGKeepBean();
-				String datumAddress = addressbindutil.toDatumAddress(blockChainBean.getFrom_address());
+				String datumAddress = addressbindutil.toDatumAddress(blockChainBean.getFrom());
 				dgKeepBean.setUser_address(datumAddress).setKeep_status(DGKeepBean.KEEP_STATUS_1);
 				List<DGKeepBean> selectList2 = dao.selectList(dgKeepBean);
 				boolean bool = true;
@@ -117,16 +116,19 @@ public class DGCertTask extends TaskImpl {
 
 					// 得到交易池
 					dgKeepBean.setDg_symbol(dgSymbol.getSymbol());
-					select.setAmount_two_hash(blockChainBean.getReal_hash());
+					select.setAmount_two_hash(blockChainBean.getHash());
 
-					BlockChainTransactionBean transactionBean = sqlModeApi.select(new BlockChainTransactionBean().setReal_hash(select.getAmount_one_hash()));
-
-					if (dgSymbol.getBase_currency().equals(blockChainBean.getBc_type_name())) {// 第二手入金为基本币种
-						select.setBase_keep_num(blockChainBean.getBc_amount());
-						select.setQuotes_keep_num(transactionBean.getBc_amount());
+					BlockTranBean transactionBean = dao.select(new BlockTranBean().setHash(select.getAmount_one_hash()));
+					DGSymbolConfBean select5 = dao.select(new DGSymbolConfBean().setBlock_name(blockChainBean.getBlock()).setContract_address(blockChainBean.getToken()));
+					if(select5==null) {
+						continue;
+					}
+					if (dgSymbol.getBase_currency().equals(select5.getSymbol())) {// 第二手入金为基本币种
+						select.setBase_keep_num(blockChainBean.getNum());
+						select.setQuotes_keep_num(transactionBean.getNum());
 					} else {
-						select.setBase_keep_num(transactionBean.getBc_amount());
-						select.setQuotes_keep_num(blockChainBean.getBc_amount());
+						select.setBase_keep_num(transactionBean.getNum());
+						select.setQuotes_keep_num(blockChainBean.getNum());
 					}
 
 					dao.updata(select);
@@ -170,8 +172,12 @@ public class DGCertTask extends TaskImpl {
 				if (bool) {
 					// 第一手入金
 					DGKeepBean select = new DGKeepBean().setUser_address(datumAddress).setKeep_status(DGKeepBean.KEEP_STATUS_1);
-					select.setAmount_one_hash(blockChainBean.getReal_hash());
-					select.setDg_symbol(blockChainBean.getBc_type_name());
+					select.setAmount_one_hash(blockChainBean.getHash());
+					DGSymbolConfBean select5 = dao.select(new DGSymbolConfBean().setBlock_name(blockChainBean.getBlock()).setContract_address(blockChainBean.getToken()));
+					if(select5==null) {
+						continue;
+					}
+					select.setDg_symbol(select5.getSymbol());
 					select = dao.save(select);
 				}
 			}

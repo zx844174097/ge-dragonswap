@@ -18,6 +18,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolCreateBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
@@ -36,6 +37,7 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 		super.init(object);
 		dao.createTable(DGKeepBean.class);
 		dao.createTable(DGKeepTranLogBean.class);
+		dao.createTable(DGTranLogBean.class);
 		dao.createTable(DGSymbolCreateBean.class);
 		dao.createTable(DGSymbolBean.class);
 		dao.createTable(DGSymbolDescriptBean.class);

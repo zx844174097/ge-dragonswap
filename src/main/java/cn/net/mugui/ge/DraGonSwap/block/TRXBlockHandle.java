@@ -1,7 +1,9 @@
 package cn.net.mugui.ge.DraGonSwap.block;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.Base58;
@@ -18,10 +20,13 @@ import com.mugui.spring.util.HTTPUtil;
 
 import cn.net.mugui.ge.block.tron.TRC20.Address;
 import cn.net.mugui.ge.block.tron.TRC20.ApiResult;
+import cn.net.mugui.ge.block.tron.TRC20.ContractEvent;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Credential;
 import cn.net.mugui.ge.block.tron.TRC20.TransferTransaction;
+import cn.net.mugui.ge.block.tron.TRC20.Trc20;
 import cn.net.mugui.ge.block.tron.TRC20.TronApi;
+import cn.net.mugui.ge.block.tron.TRC20.TronKit;
 
 @Component
 public class TRXBlockHandle implements BlockHandleApi {
@@ -52,7 +57,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 		if (tempBean == null) {
 			tempBean = new TempBean();
 			tempBean.credential = Credential.fromPrivateKey(pri);
-			tempBean.address = encode58Check(ECKey.fromPrivate(Hex.decode(pri)).getAddress());
+			tempBean.address =tempBean.credential.getAddress().base58;
 		}
 		Credential credential = tempBean.credential;
 		if (StringUtils.isNotBlank(contract_address)) {
@@ -124,6 +129,48 @@ public class TRXBlockHandle implements BlockHandleApi {
 	@Override
 	public String getAddressByPub(String pub) {
 		return Address.fromPublicKey(pub).base58;
+	}
+
+	@Override
+	public Object getTran(long tran_index) {
+		try {
+			List<ContractEvent> blockEvents = mainNet.getBlockEvents(tran_index);
+			return blockEvents;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	@Override
+	public long getLastBlock() {
+		try {
+			return ( (long)mainNet.getLastNlock());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	public  TronKit kit = new TronKit(mainNet, Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
+	private  HashMap<String, BigInteger> d_map = new HashMap<>();
+
+	public  BigDecimal 转数额(BigInteger bigInteger, String contractAddress) {
+		BigInteger decimals = d_map.get(contractAddress);
+		if (decimals == null) {
+			synchronized (map) {
+				decimals = d_map.get(contractAddress);
+				if (decimals == null) {
+					try {
+						Trc20 token = kit.trc20(contractAddress);
+						decimals = token.decimals();
+						d_map.put(contractAddress, decimals);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		return new BigDecimal(bigInteger).divide(new BigDecimal(Math.pow(10, decimals.longValue())));
 	}
 
 }

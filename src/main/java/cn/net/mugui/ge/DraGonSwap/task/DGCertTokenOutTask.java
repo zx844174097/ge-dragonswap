@@ -65,26 +65,25 @@ public class DGCertTokenOutTask extends TaskImpl {
 						}
 					}
 				}
-
-				switch (poll.getLog_status()) {
-				case DGKeepTranLogBean.log_status_0:
-					send(poll);
-					break;
-
-				case DGKeepTranLogBean.log_status_1:
-					// 判断交易是否成功
-					if (isSucess(poll)) {
-						poll.setLog_status(DGKeepTranLogBean.log_status_2);
-						dao.updata(poll);
-						break;
-					}
-					broadcastTran(poll);
-					break;
-				default:
-					break;
-				}
 			}
 
+			switch (poll.getLog_status()) {
+			case DGKeepTranLogBean.log_status_0:
+				send(poll);
+				break;
+
+			case DGKeepTranLogBean.log_status_1:
+				// 判断交易是否成功
+				if (isSucess(poll)) {
+					poll.setLog_status(DGKeepTranLogBean.log_status_2);
+					dao.updata(poll);
+					break;
+				}
+				broadcastTran(poll);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -122,11 +121,11 @@ public class DGCertTokenOutTask extends TaskImpl {
 
 	public void outToken(String to_address, String token, String symbol, BigDecimal num, String block_name) {
 		DGKeepTranLogBean dgKeepTranLogBean = new DGKeepTranLogBean().setDg_symbol(symbol).setToken_address(to_address).setTo_address(to_address).setAmount(num);
-		
-		DGKeepTranLogBean last=dao.select(new DGKeepTranLogBean().setDg_symbol(symbol));
-		BigDecimal last_big=BigDecimal.ZERO;
-		if(last!=null) {
-			last_big=last.getNow_out_cert_token_num();
+
+		DGKeepTranLogBean last = dao.select(new DGKeepTranLogBean().setDg_symbol(symbol));
+		BigDecimal last_big = BigDecimal.ZERO;
+		if (last != null) {
+			last_big = last.getNow_out_cert_token_num();
 		}
 		DGSymbolConfBean select = dao.select(new DGSymbolConfBean().setContract_address(token).setBlock_name(block_name));
 		dgKeepTranLogBean.setToken_name(select.getSymbol());
@@ -136,7 +135,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 		dgKeepTranLogBean.setLog_status(DGKeepTranLogBean.log_status_0);
 		dgKeepTranLogBean.setBlock(block_name);
 		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
-		
+
 		add(dgKeepTranLogBean);
 	}
 

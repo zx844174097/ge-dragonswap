@@ -64,4 +64,18 @@ public class ETHBlockHandle implements BlockHandleApi {
 		return ethBlock.getAddress(pub);
 	}
 
+	
+
+	@Override
+	public Object getTran(long tran_index) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public long getLastBlock() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

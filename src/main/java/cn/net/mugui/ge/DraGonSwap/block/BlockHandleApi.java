@@ -64,5 +64,14 @@ public interface BlockHandleApi {
 	 * @return
 	 */
 	String getAddressByPub(String pub);
+	
+	/**
+	 * 得到当前区块交易信息
+	 * @param tran_index
+	 */
+	Object getTran(long tran_index);
+
+	long getLastBlock();
+
 
 }

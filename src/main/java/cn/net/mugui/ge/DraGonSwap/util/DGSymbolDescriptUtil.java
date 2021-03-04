@@ -43,7 +43,7 @@ public class DGSymbolDescriptUtil {
 		synchronized (swapBean) {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal add = symbol_des.getBase_num().add(bc_amount);
-			BigDecimal quote_num = bc_amount.divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal quote_num =  symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			symbol_des.setBase_num(add);
 			symbol_des.setQuote_num(quote_num);
@@ -65,7 +65,7 @@ public class DGSymbolDescriptUtil {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal add = symbol_des.getQuote_num().add(bc_amount);
 
-			BigDecimal quote_num = bc_amount.divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getBase_num().subtract(quote_num);
 			symbol_des.setQuote_num(add);
 			symbol_des.setBase_num(quote_num);

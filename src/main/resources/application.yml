@@ -17,7 +17,7 @@ mysqlPwd: mugui123
 dbName: dg
 server:
   port: 8074
-redisRegion: 2
+redisRegion: 5
 dubbo:
   cloud:
     subscribed-services: AuthorityServiceManagerApi

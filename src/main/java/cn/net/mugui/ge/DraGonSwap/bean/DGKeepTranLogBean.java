@@ -71,7 +71,7 @@ public class DGKeepTranLogBean extends JsonBean {
 	/**
 	 * 状态
 	 */
-	@SQLField
+	@SQLField(DEFAULT = true,DEFAULT_text = "0")
 	private Integer log_status;
 
 	/**

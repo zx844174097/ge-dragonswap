@@ -22,6 +22,10 @@ public class UpdateStatusListener implements ListenerModel {
 			Object ret_data = bag.getRet_data();
 			
 			manager.update((Integer) ret_data);
+			
+			//
+			
+			
 		}
 	}
 
