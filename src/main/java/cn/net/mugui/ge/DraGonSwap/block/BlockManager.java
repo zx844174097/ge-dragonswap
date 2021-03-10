@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.mugui.spring.base.Manager;
-import com.mugui.spring.net.auto.AutoManager;
 import com.mugui.spring.net.classutil.DataSave;
 
 /**

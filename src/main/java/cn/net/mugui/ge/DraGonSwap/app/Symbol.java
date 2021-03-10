@@ -24,10 +24,8 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.PushRemarkBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
-import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DGPriAddressCache;
@@ -67,8 +65,7 @@ public class Symbol implements Mugui {
 	public Message list(NetBag bag) {
 		JSONArray array = new JSONArray();
 
-		for (DGSymbolBean dgSymbolBean : dao
-				.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
+		for (DGSymbolBean dgSymbolBean : dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
 			JSONObject jsonObject = dgSymbolBean.get();
 
 			JSONArray select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
@@ -163,7 +160,7 @@ public class Symbol implements Mugui {
 	 * @return
 	 */
 	@Transactional
-	public Message push_pub_key(NetBag bag) {
+	public Message pushPub(NetBag bag) {
 		JSONObject data = (JSONObject) bag.getData();
 		String public_key_eth = data.getString("public_key_eth");
 		String public_key_btc = data.getString("public_key_btc");
@@ -174,8 +171,7 @@ public class Symbol implements Mugui {
 		dgAddressBindBean.setPub(public_key_eth);
 		if (dao.select(dgAddressBindBean) == null) {
 			dgAddressBindBean.setBlock_name("Tron");
-			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(),
-					dgAddressBindBean.getPub());
+			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(), dgAddressBindBean.getPub().substring(2));
 			dgAddressBindBean.setAddress(addressByPub);
 			dgAddressBindBean.setDatum_address(addressByPub);
 			dgAddressBindBean = dao.save(dgAddressBindBean);
@@ -186,18 +182,18 @@ public class Symbol implements Mugui {
 			addressByPub = blockService.getAddressByPub(ETH.getBlock_name(), ETH.getPub());
 			ETH.setAddress(addressByPub);
 			ETH.setDatum_address(dgAddressBindBean.getAddress());
-			ETH = dao.save(dgAddressBindBean);
+			ETH = dao.save(ETH);
 
 		}
 
 		DGAddressBindBean BTC = new DGAddressBindBean();
 		BTC.setPub(public_key_btc);
 		if (dao.select(BTC) == null) {
-			BTC.setBlock_name("ETH");
+			BTC.setBlock_name("BTC");
 			String addressByPub = blockService.getAddressByPub(BTC.getBlock_name(), BTC.getPub());
 			BTC.setAddress(addressByPub);
 			BTC.setDatum_address(dgAddressBindBean.getAddress());
-			BTC = dao.save(dgAddressBindBean);
+			BTC = dao.save(BTC);
 		}
 		return Message.ok();
 	}
@@ -212,7 +208,7 @@ public class Symbol implements Mugui {
 	 * @return
 	 */
 	@Transactional
-	public Message push_remark(NetBag bag) {
+	public Message pushRemark(NetBag bag) {
 		PushRemarkBean newBean = PushRemarkBean.newBean(PushRemarkBean.class, bag.getData());
 		String hash = newBean.getHash();
 		if (StringUtils.isBlank(hash)) {
@@ -223,12 +219,23 @@ public class Symbol implements Mugui {
 			if (newBean.getLimit_time() > 10000) {
 				return Message.error("参数错误");
 			}
+			BigDecimal setScale = newBean.getLimit_min().setScale(2, BigDecimal.ROUND_HALF_UP);
+			newBean.setLimit_min(setScale);
 			if (newBean.getLimit_min().compareTo(BigDecimal.ZERO) <= 0) {
 				return Message.error("参数错误");
 			}
 			redis.addRedisByTime("wait_" + hash, newBean.toString(), 3, TimeUnit.DAYS);
 			break;
 		case 1:
+			if (StringUtils.isBlank(newBean.getRemark())) {
+				return Message.error("参数错误");
+			}
+
+			PushRemarkBean pushRemarkBean = new PushRemarkBean().setType(1);
+			pushRemarkBean.setHash(newBean.getRemark());
+			pushRemarkBean.setRemark(newBean.getHash());
+			redis.addRedisByTime("wait_" + hash, newBean.toString(), 3, TimeUnit.DAYS);
+			redis.addRedisByTime("wait_" + hash, pushRemarkBean.toString(), 3, TimeUnit.DAYS);
 			break;
 		default:
 			return Message.error("参数错误");

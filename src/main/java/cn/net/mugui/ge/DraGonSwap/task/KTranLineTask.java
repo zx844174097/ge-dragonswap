@@ -64,7 +64,7 @@ public class KTranLineTask extends TaskImpl {
 				if (poll == null) {
 					List<DGSymbolBean> selectList = dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1));
 					for (DGSymbolBean dgSymbolBean : selectList) {
-						newQuotes(i, dgSymbolBean.getSymbol());
+						 newQuotes(i, dgSymbolBean.getSymbol());
 					}
 				} else {
 					DGQuotes newQuotes = newQuotes(i, poll.getDg_symbol());

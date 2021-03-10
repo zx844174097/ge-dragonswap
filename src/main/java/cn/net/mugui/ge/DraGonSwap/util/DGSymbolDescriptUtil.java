@@ -36,31 +36,72 @@ public class DGSymbolDescriptUtil {
 	 * @param bc_amount
 	 * @param select
 	 * @param string
-	 * @return 
+	 * @return
 	 */
-	public BigDecimal inBase(BigDecimal bc_amount, int precision, String symbol) {
-		SwapBean swapBean = manager.get(symbol);
+	public BigDecimal inBase(BigDecimal bc_amount, int precision, SwapBean swapBean) {
 		synchronized (swapBean) {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal add = symbol_des.getBase_num().add(bc_amount);
-			BigDecimal quote_num =  symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			symbol_des.setBase_num(add);
 			symbol_des.setQuote_num(quote_num);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}
-
 	}
+
+	/**
+	 * 入金基本币种的估算
+	 * 
+	 * @param bc_amount
+	 * @param precision
+	 * @param swapBean
+	 * @return
+	 */
+	public boolean reckonInBase(BigDecimal bc_amount, int precision, SwapBean swapBean, BigDecimal limit_num) {
+		synchronized (swapBean) {
+			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
+			BigDecimal add = symbol_des.getBase_num().add(bc_amount);
+			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
+			if (subtract.compareTo(limit_num) >= 0) {
+				return true;
+			}
+			return false;
+		}
+	}
+
+	/**
+	 * 入金计价币种的估算
+	 * 
+	 * @param bc_amount
+	 * @param precision
+	 * @param swapBean
+	 * @return
+	 */
+	public boolean reckonInQuote(BigDecimal bc_amount, int precision, SwapBean swapBean, BigDecimal limit_num) {
+		synchronized (swapBean) {
+			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
+			BigDecimal add = symbol_des.getQuote_num().add(bc_amount);
+			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal subtract = symbol_des.getBase_num().subtract(quote_num);
+			if (subtract.compareTo(limit_num) >= 0) {
+				return true;
+			}
+			return false;
+		}
+	}
+
 	/**
 	 * 入金计价币种
+	 * 
 	 * @param bc_amount
 	 * @param precision
 	 * @param symbol
 	 * @return
 	 */
-	public BigDecimal inQuote(BigDecimal bc_amount, Integer precision, String symbol) {
-		SwapBean swapBean = manager.get(symbol);
+	public BigDecimal inQuote(BigDecimal bc_amount, Integer precision, SwapBean swapBean) {
 		synchronized (swapBean) {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal add = symbol_des.getQuote_num().add(bc_amount);

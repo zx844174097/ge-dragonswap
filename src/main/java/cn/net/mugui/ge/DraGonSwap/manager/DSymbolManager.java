@@ -1,5 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.manager;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 
 	@Autowired
 	private DGDao dao;
-	
+
 	@Autowired
 	private BlockManager BlockManager;
 
@@ -58,12 +59,24 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 	public void add(Integer dg_symbol_id) {
 		add(dao.select(new DGSymbolBean().setDg_symbol_id(dg_symbol_id).setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1)));
 	}
+
 	public void add(String dg_symbol) {
 		add(dao.select(new DGSymbolBean().setSymbol(dg_symbol).setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1)));
 	}
 
+	private HashMap<Integer, String> symbol_map = new HashMap<>();
+
 	public SwapBean get(Integer dg_symbol_id) {
-		return get(dao.select(new DGSymbolBean().setDg_symbol_id(dg_symbol_id)).getSymbol());
+		String string = symbol_map.get(dg_symbol_id);
+		if (string == null) {
+			synchronized (symbol_map) {
+				string = symbol_map.get(dg_symbol_id);
+				if (string == null) {
+					string = dao.select(new DGSymbolBean().setDg_symbol_id(dg_symbol_id)).getSymbol();
+				}
+			}
+		}
+		return get(string);
 	}
 
 	@Autowired
@@ -95,19 +108,20 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 
 	public void update(Integer dg_symbol_id) {
 		SwapBean swapBean = get(dg_symbol_id);
-		if(swapBean==null) {
+		if (swapBean == null) {
 			add(dg_symbol_id);
-			 swapBean = get(dg_symbol_id);
-			 return;
+			swapBean = get(dg_symbol_id);
+			return;
 		}
 		update(swapBean);
 	}
+
 	public void update(String dg_symbol) {
 		SwapBean swapBean = get(dg_symbol);
-		if(swapBean==null) {
+		if (swapBean == null) {
 			add(dg_symbol);
-			 swapBean = get(dg_symbol);
-			 return;
+			swapBean = get(dg_symbol);
+			return;
 		}
 		update(swapBean);
 	}

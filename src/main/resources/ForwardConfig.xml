@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <forward>
 
-	 <server-node >
+	<server-node>
 		<url>http://127.0.0.1:8074/</url>
 		<inject>http://127.0.0.1:8060/</inject>
 		<value>symbol.admin.method.*,symbol.method.*,symbol.ws.*
 		</value>
 		<classes>cn.net.mugui.ge.DraGonSwap.app.SymbolWs</classes>
-	</server-node> 
+	</server-node>
 </forward>

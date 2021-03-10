@@ -1,6 +1,5 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
-import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.util.Other;
 
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
@@ -33,7 +31,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	public void run() {
 		dao.createTable(DGTranLogBean.class);
 		while (true) {
-			try {
+			try { 
 				handle();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -64,14 +62,14 @@ public class DGTransferTokenOutTask extends TaskImpl {
 			}
 
 			switch (poll.getLog_status()) {
-			case DGTranLogBean.log_status_0:
+			case DGTranLogBean.log_status_1:
 				send(poll);
 				break;
 
-			case DGTranLogBean.log_status_1:
+			case DGTranLogBean.log_status_2:
 				// 判断交易是否成功
 				if (isSucess(poll)) {
-					poll.setLog_status(DGTranLogBean.log_status_2);
+					poll.setLog_status(DGTranLogBean.log_status_5);
 					dao.updata(poll);
 					break;
 				}
@@ -105,7 +103,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 		Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate().toString());// 广播
 		// 无论成功与否都修改为以转出
 		poll.setTo_hash(broadcastTran.getDate().toString());
-		poll.setLog_status(DGTranLogBean.log_status_1);
+		poll.setLog_status(DGTranLogBean.log_status_2);
 		dao.updata(poll);
 	}
 
@@ -117,6 +115,8 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	private ConcurrentLinkedDeque<DGTranLogBean> linkedList = new ConcurrentLinkedDeque<>();
 
 	public void add(DGTranLogBean logBean) {
+		logBean.setLog_status(DGTranLogBean.log_status_1);
+		dao.updata(logBean);
 		synchronized (this) {
 			linkedList.add(logBean);
 			this.notifyAll();

@@ -48,7 +48,7 @@ public class DGAddressBindBean extends JsonBean {
 	/**
 	 * 公钥
 	 */
-	@SQLField(NULL = false,DATA_TYPE = "varchar(128)")
+	@SQLField(NULL = false,DATA_TYPE = "varchar(256)")
 	private String pub;
 	
 

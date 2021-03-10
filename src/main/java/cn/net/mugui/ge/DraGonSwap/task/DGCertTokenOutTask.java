@@ -1,28 +1,21 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
-
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
-import com.mugui.spring.util.RedisAccess;
 import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
-
-import com.mugui.spring.base.TaskInterface;
 
 /**
  * token持有证明转出
@@ -100,7 +93,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 	private void send(DGKeepTranLogBean poll) {
 		add(poll);
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getBlock(), manager.get(poll.getDg_symbol()).pri_cert.getPri(), poll.getTo_address(), poll.getAmount(), poll.getToken_address());
+		Message sendTran = blockservice.getSendTran(poll.getBlock(), manager.get(poll.getDg_symbol()).pri_tran.getPri(), poll.getTo_address(), poll.getAmount(), poll.getToken_address());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}

@@ -102,7 +102,7 @@ public class DGKeepBean extends JsonBean {
 	public static final int KEEP_STATUS_2 = 2;
 
 	/**
-	 * 入金未完成，已入金额已退还
+	 * 入金未完成
 	 */
 	public static final int KEEP_STATUS_3 = 3;
 
