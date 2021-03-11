@@ -103,13 +103,15 @@ public class TRXBlockHandle implements BlockHandleApi {
 		String post = HTTPUtil.post(url, jsonObject.toJSONString());
 		JSONObject jsonObject1 = JSONObject.parseObject(post);
 		JSONArray ret = jsonObject1.getJSONArray("ret");
+		if (ret == null) {
+			return false;
+		}
 		JSONObject o = (JSONObject) ret.get(0);
 		String contractRet = o.getString("contractRet");
 		if (contractRet.equals("SUCCESS")) {
 			return true;
 		}
 		throw new RuntimeException("交易失败，余额或能量不足" + hash);
-
 	}
 
 	@Override

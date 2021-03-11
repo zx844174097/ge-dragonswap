@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
+import com.mugui.sql.SqlServer;
 import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
@@ -77,17 +78,15 @@ public class DGTransferTask extends TaskImpl {
 			List<BlockTranBean> selectList = dao.selectList(BlockTranBean.class, Select.q(new BlockTranBean()).where(Where.q().gt("tran_id", value)));
 			for (BlockTranBean blockChainBean : selectList) {
 				sysConfApi.setValue("dg_tran_handle_index", blockChainBean.getTran_id().toString());
-
 				DGTranLogBean log = new DGTranLogBean();
 				log.setFrom_hash(blockChainBean.getHash());
 				if (dao.select(log) != null) {// 已处理的交易
 					continue;
 				}
-				
 				Object byNullRedis = redisUtil.getRedis("wait_" + log.getFrom_hash());
 				PushRemarkBean newBean = PushRemarkBean.newBean(PushRemarkBean.class, byNullRedis);
 				if (byNullRedis != null) {
-					if (newBean.getType()==null||newBean.getType() != 0) {
+					if (newBean.getType() == null || newBean.getType() != 0) {
 						continue;
 					}
 					log.setTo_limit_num(newBean.getLimit_min());
@@ -95,7 +94,6 @@ public class DGTransferTask extends TaskImpl {
 				} else {
 					continue;
 				}
-
 				DGPriAddressBean dgPriAddressBean = new DGPriAddressBean().setAddress(blockChainBean.getTo());
 				dgPriAddressBean = dao.select(dgPriAddressBean);
 				if (dgPriAddressBean == null) {
@@ -115,84 +113,101 @@ public class DGTransferTask extends TaskImpl {
 				if (select2 == null) {
 					continue;
 				}
-
-				log.setFrom_address(blockChainBean.getFrom());
-				log.setFrom_block(blockChainBean.getBlock());
-				log.setDg_symbol(dgSymbol.getSymbol());
-				log.setFrom_token(blockChainBean.getToken());
-
-				log.setFrom_token_name(select2.getSymbol());
-				BigDecimal bc_amount = blockChainBean.getNum();
-				log.setFrom_num(bc_amount);
-
-				if (dgSymbol.getSymbol().equals(dgSymbol.getBase_currency())) {// 以基本金额入金
-
-					if (dgSymbol.getBase_min_amt().compareTo(bc_amount) > 0) {
-						log.setLog_status(DGTranLogBean.log_status_3);
-						log.setLog_detail("入金" + dgSymbol.getBase_currency() + "量：" + bc_amount + "过低");
-						log = dao.save(log);
-						continue;
+				try {
+					dao.getSqlServer().setAutoCommit(false);
+					handle(blockChainBean, log, dgSymbol, select2);
+					dao.getSqlServer().commit();
+					redisUtil.deleteRedis("wait_" + log.getFrom_hash());
+				} catch (Exception e) {
+					e.printStackTrace();
+					try {
+						dao.getSqlServer().rollback();
+					} catch (Exception e1) {
+						e1.printStackTrace();
 					}
-					DGSymbolConfBean select = symbolConfUtil.get(dgSymbol.getQuote_currency());
-
-					String block_name = select.getBlock_name();
-					String blockAddress = addressBindUtil.toBlockAddress(blockChainBean.getFrom(), block_name);
-					if (blockAddress == null) {
-						log.setLog_status(DGTranLogBean.log_status_3);
-						log.setLog_detail("服务器未注册该地址");
-						log = dao.save(log);
-						continue;
-					}
-					if (dgSymbol.getBase_max_amt().compareTo(bc_amount) < 0) {
-						bc_amount = dgSymbol.getBase_max_amt();
-					}
-					log.setFrom_num(bc_amount);
-
-//					BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
-//					log.setTo_num(inBase);
-//					log.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
-
-					log.setTo_address(blockAddress);
-					log.setTo_block(block_name);
-					log.setTo_token_name(select.getSymbol());
-				} else {// 以计价金额入金
-					if (dgSymbol.getQuote_min_amt().compareTo(bc_amount) > 0) {
-						log.setLog_status(DGTranLogBean.log_status_3);
-						log.setLog_detail("入金" + dgSymbol.getQuote_currency() + "量：" + bc_amount + "过低");
-						log = dao.save(log);
-						continue;
-					}
-					if (dgSymbol.getQuote_max_amt().compareTo(bc_amount) < 0) {
-						bc_amount = dgSymbol.getQuote_max_amt();
-					}
-					DGSymbolConfBean select = symbolConfUtil.get(dgSymbol.getBase_currency());
-
-					String block_name = select.getBlock_name();
-					String blockAddress = addressBindUtil.toBlockAddress(blockChainBean.getFrom(), block_name);
-					if (blockAddress == null) {
-						log.setLog_status(DGTranLogBean.log_status_3);
-						log.setLog_detail("服务器未注册该地址");
-						log = dao.save(log);
-						continue;
-					}
-					log.setFrom_num(bc_amount);
-
-//					BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
-//					log.setTo_num(inQuote);
-//					log.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
-
-					log.setTo_address(blockAddress);
-					log.setTo_block(block_name);
-					log.setTo_token(select.getContract_address());
-					log.setTo_token_name(select.getSymbol()); 
+					SqlServer.reback();
 				}
-				log.setLog_status(DGTranLogBean.log_status_0);
-				log = dao.save(log);
-//				transfer.add(log);
 
 			}
 
 		}
+	}
+
+	private void handle(BlockTranBean blockChainBean, DGTranLogBean log, DGSymbolBean dgSymbol, DGSymbolConfBean select2) {
+
+		log.setFrom_address(blockChainBean.getFrom());
+		log.setFrom_block(blockChainBean.getBlock());
+		log.setDg_symbol(dgSymbol.getSymbol());
+		log.setFrom_token(blockChainBean.getToken());
+
+		log.setFrom_token_name(select2.getSymbol());
+		BigDecimal bc_amount = blockChainBean.getNum();
+		log.setFrom_num(bc_amount);
+
+		if (log.getFrom_token_name().equals(dgSymbol.getBase_currency())) {// 以基本金额入金
+
+			if (dgSymbol.getBase_min_amt().compareTo(bc_amount) > 0) {
+				log.setLog_status(DGTranLogBean.log_status_3);
+				log.setLog_detail("入金" + dgSymbol.getBase_currency() + "量：" + bc_amount + "过低");
+				log = dao.save(log);
+				return;
+			}
+			DGSymbolConfBean select = symbolConfUtil.get(dgSymbol.getQuote_currency());
+
+			String block_name = select.getBlock_name();
+			String blockAddress = addressBindUtil.toBlockAddress(blockChainBean.getFrom(), block_name);
+			if (blockAddress == null) {
+				log.setLog_status(DGTranLogBean.log_status_3);
+				log.setLog_detail("服务器未注册该地址");
+				log = dao.save(log);
+				return;
+			}
+			if (dgSymbol.getBase_max_amt().compareTo(bc_amount) < 0) {
+				bc_amount = dgSymbol.getBase_max_amt();
+			}
+			log.setFrom_num(bc_amount);
+
+//			BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
+//			log.setTo_num(inBase);
+//			log.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
+
+			log.setTo_address(blockAddress);
+			log.setTo_block(block_name);
+			log.setTo_token(select.getContract_address());
+			log.setTo_token_name(select.getSymbol());
+		} else {// 以计价金额入金
+			if (dgSymbol.getQuote_min_amt().compareTo(bc_amount) > 0) {
+				log.setLog_status(DGTranLogBean.log_status_3);
+				log.setLog_detail("入金" + dgSymbol.getQuote_currency() + "量：" + bc_amount + "过低");
+				log = dao.save(log);
+				return;
+			}
+			if (dgSymbol.getQuote_max_amt().compareTo(bc_amount) < 0) {
+				bc_amount = dgSymbol.getQuote_max_amt();
+			}
+			DGSymbolConfBean select = symbolConfUtil.get(dgSymbol.getBase_currency());
+
+			String block_name = select.getBlock_name();
+			String blockAddress = addressBindUtil.toBlockAddress(blockChainBean.getFrom(), block_name);
+			if (blockAddress == null) {
+				log.setLog_status(DGTranLogBean.log_status_3);
+				log.setLog_detail("服务器未注册该地址");
+				log = dao.save(log);
+				return;
+			}
+			log.setFrom_num(bc_amount);
+
+//			BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
+//			log.setTo_num(inQuote);
+//			log.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
+
+			log.setTo_address(blockAddress);
+			log.setTo_block(block_name);
+			log.setTo_token(select.getContract_address());
+			log.setTo_token_name(select.getSymbol());
+		}
+		log.setLog_status(DGTranLogBean.log_status_0);
+		log = dao.save(log);
 	}
 
 	@Autowired

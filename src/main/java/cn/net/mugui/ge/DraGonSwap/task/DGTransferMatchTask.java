@@ -2,11 +2,11 @@ package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
@@ -69,13 +69,18 @@ public class DGTransferMatchTask extends TaskImpl {
 
 	private void handle() {
 		long currentTimeMillis = System.currentTimeMillis();
-		for (DGTranLogBean bean : match_list) {
-			if (bean.getTran_log_create_time().getTime() + bean.getTo_limit_time() * 1000 > currentTimeMillis) {
+		Iterator<DGTranLogBean> iterator = match_list.iterator();
+		
+		while(iterator.hasNext()) {
+			DGTranLogBean bean = iterator.next();
+			if (bean.getTran_log_create_time().getTime() + bean.getTo_limit_time() * 60 * 1000 < currentTimeMillis) {
 				rollback(bean);
+				iterator.remove();
+				continue;
 			}
 			try {
 				dao.getSqlServer().setAutoCommit(false);
-				handle(bean);
+				handle(bean,iterator);
 				dao.getSqlServer().commit();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -86,7 +91,9 @@ public class DGTransferMatchTask extends TaskImpl {
 					e1.printStackTrace();
 				}
 			}
+		
 		}
+		
 		addNewLog();
 	}
 
@@ -104,11 +111,11 @@ public class DGTransferMatchTask extends TaskImpl {
 		bean.setTo_token_name(bean.getFrom_token_name());
 		transfer.add(bean);
 	}
-	
+
 	@Autowired
 	private KTranLineTask kTranLineTask;
 
-	private void handle(DGTranLogBean bean) throws SQLException, Exception {
+	private void handle(DGTranLogBean bean, Iterator<DGTranLogBean> iterator) throws SQLException, Exception {
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
 		BigDecimal bc_amount = bean.getFrom_num();
 		String[] split = bean.getDg_symbol().split("[/]");
@@ -125,6 +132,7 @@ public class DGTransferMatchTask extends TaskImpl {
 				dao.getSqlServer().commit();
 				transfer.add(bean);
 				kTranLineTask.add(bean);
+				iterator.remove();
 			}
 		} else {// 计价币种
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[0]);
@@ -137,6 +145,7 @@ public class DGTransferMatchTask extends TaskImpl {
 				dao.getSqlServer().commit();
 				transfer.add(bean);
 				kTranLineTask.add(bean);
+				iterator.remove();
 			}
 		}
 	}

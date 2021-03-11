@@ -31,6 +31,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	public void init() {
 		super.init();
 		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_1)));
+		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_2)));
 	}
 
 	@Override
@@ -94,7 +95,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		blockservice.broadcastTran(poll.getTo_block(), poll.get().getString("broadcast"));
+		blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
 		return;
 	}
 
@@ -121,8 +122,10 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	private ConcurrentLinkedDeque<DGTranLogBean> linkedList = new ConcurrentLinkedDeque<>();
 
 	public void add(DGTranLogBean logBean) {
-		logBean.setLog_status(DGTranLogBean.log_status_1);
-		dao.updata(logBean);
+		if (DGTranLogBean.log_status_4 == logBean.getLog_status()) {
+			logBean.setLog_status(DGTranLogBean.log_status_1);
+			dao.updata(logBean);
+		}
 		synchronized (this) {
 			linkedList.add(logBean);
 			this.notifyAll();
