@@ -219,8 +219,8 @@ public class Symbol implements Mugui {
 			if (newBean.getLimit_time() > 10000) {
 				return Message.error("参数错误");
 			}
-			BigDecimal setScale = newBean.getLimit_min().setScale(2, BigDecimal.ROUND_HALF_UP);
-			newBean.setLimit_min(setScale);
+//			BigDecimal setScale = newBean.getLimit_min().setScale(2, BigDecimal.ROUND_HALF_UP);
+//			newBean.setLimit_min(setScale);
 			if (newBean.getLimit_min().compareTo(BigDecimal.ZERO) <= 0) {
 				return Message.error("参数错误");
 			}
