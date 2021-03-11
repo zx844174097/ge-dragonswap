@@ -5,9 +5,9 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.alibaba.fastjson.JSONArray;
 import com.mugui.Mugui;
 import com.mugui.spring.base.Module;
+import com.mugui.spring.net.authority.Authority;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.spring.net.bean.NetBag;
 import com.mugui.spring.net.dblistener.PageUtil;
@@ -18,7 +18,6 @@ import com.mugui.sql.loader.Where;
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
-import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 
 /**
@@ -28,6 +27,7 @@ import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
  *
  */
 @Module(name = "symbol", type = "ws")
+@Authority(true)
 @WebSocket(type = 0, blank = 2000)
 public class SymbolWs implements Mugui {
 

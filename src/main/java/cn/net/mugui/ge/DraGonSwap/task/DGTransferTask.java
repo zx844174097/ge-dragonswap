@@ -183,7 +183,8 @@ public class DGTransferTask extends TaskImpl {
 
 					log.setTo_address(blockAddress);
 					log.setTo_block(block_name);
-					log.setTo_token_name(select.getSymbol());
+					log.setTo_token(select.getContract_address());
+					log.setTo_token_name(select.getSymbol()); 
 				}
 				log.setLog_status(DGTranLogBean.log_status_0);
 				log = dao.save(log);

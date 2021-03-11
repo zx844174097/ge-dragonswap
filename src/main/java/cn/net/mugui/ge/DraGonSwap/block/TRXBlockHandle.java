@@ -51,28 +51,35 @@ public class TRXBlockHandle implements BlockHandleApi {
 
 	@Override
 	public Object getSendTran(String pri, String to_address, BigDecimal amount, String contract_address) throws Exception {
-		TempBean tempBean = map.get(pri);
-		if (tempBean == null) {
-			tempBean = new TempBean();
-			tempBean.credential = Credential.fromPrivateKey(pri);
-			tempBean.address =tempBean.credential.getAddress().base58;
-		}
+		TempBean tempBean = getTempBean(pri);
+
 		Credential credential = tempBean.credential;
 		if (StringUtils.isNotBlank(contract_address)) {
 
 			ContractTransaction tokenSignMessage = null;
-			tokenSignMessage = mainNet.getTokenSignMessage(contract_address, to_address, amount);
-			String sign = credential.sign(Hash.sha3(tokenSignMessage.txId));
+			tokenSignMessage = mainNet.getTokenSignMessage(tempBean.address, contract_address, to_address, amount);
+			String sign = credential.sign(tokenSignMessage.txId);
 			tokenSignMessage.signature = new String[] { sign };
 			return tokenSignMessage;
 
 		} else {
 			TransferTransaction tokenSignMessage = null;
 			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, tempBean.address);
-			String sign = credential.sign(Hash.sha3(tokenSignMessage.txId));
+			String sign = credential.sign(tokenSignMessage.txId);
 			tokenSignMessage.signature = new String[] { sign };
 			return tokenSignMessage;
 		}
+	}
+
+	private TempBean getTempBean(String pri) {
+		TempBean tempBean = map.get(pri);
+		if (tempBean == null) {
+			tempBean = new TempBean();
+			tempBean.credential = Credential.fromPrivateKey(pri);
+			tempBean.address = tempBean.credential.getAddress().base58;
+			map.put(pri, tempBean);
+		}
+		return tempBean;
 	}
 
 	public String encode58Check(byte[] input) {
@@ -107,20 +114,14 @@ public class TRXBlockHandle implements BlockHandleApi {
 
 	@Override
 	public Message broadcastTran(Object send_msg) throws Exception {
-		ContractTransaction fromJson =(ContractTransaction) send_msg;
-		ApiResult broadcastTransaction = mainNet.broadcastTransaction(fromJson);
+		ApiResult broadcastTransaction = mainNet.broadcastTransaction(send_msg);
 		String txid = broadcastTransaction.txid;
 		return Message.ok(txid);
 	}
 
 	@Override
 	public String getAddressByPri(String pri) {
-		TempBean tempBean = map.get(pri);
-		if (tempBean == null) {
-			tempBean = new TempBean();
-			tempBean.credential = Credential.fromPrivateKey(pri);
-			tempBean.address =tempBean.credential.getAddress().base58;
-		}
+		TempBean tempBean = getTempBean(pri);
 		return tempBean.address;
 	}
 
@@ -140,19 +141,21 @@ public class TRXBlockHandle implements BlockHandleApi {
 		}
 		return null;
 	}
+
 	@Override
 	public long getLastBlock() {
 		try {
-			return ( (long)mainNet.getLastNlock());
+			return ((long) mainNet.getLastNlock());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return -1;
 		}
 	}
-	public  TronKit kit = new TronKit(mainNet, Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
-	private  HashMap<String, BigInteger> d_map = new HashMap<>();
 
-	public  BigDecimal 转数额(BigInteger bigInteger, String contractAddress) {
+	public TronKit kit = new TronKit(mainNet, Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
+	private HashMap<String, BigInteger> d_map = new HashMap<>();
+
+	public BigDecimal 转数额(BigInteger bigInteger, String contractAddress) {
 		BigInteger decimals = d_map.get(contractAddress);
 		if (decimals == null) {
 			synchronized (map) {
