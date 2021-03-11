@@ -8,13 +8,11 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.Base58;
 import org.bouncycastle.util.encoders.Hex;
-import org.ethereum.crypto.ECKey;
 import org.springframework.stereotype.Component;
 import org.web3j.crypto.Hash;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.spring.util.HTTPUtil;
 
@@ -108,8 +106,8 @@ public class TRXBlockHandle implements BlockHandleApi {
 	}
 
 	@Override
-	public Message broadcastTran(String send_msg) throws Exception {
-		ContractTransaction fromJson = new Gson().fromJson(send_msg, ContractTransaction.class);
+	public Message broadcastTran(Object send_msg) throws Exception {
+		ContractTransaction fromJson =(ContractTransaction) send_msg;
 		ApiResult broadcastTransaction = mainNet.broadcastTransaction(fromJson);
 		String txid = broadcastTransaction.txid;
 		return Message.ok(txid);

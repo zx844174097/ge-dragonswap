@@ -28,10 +28,16 @@ import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 public class DGTransferTokenOutTask extends TaskImpl {
 
 	@Override
+	public void init() {
+		super.init();
+		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_1)));
+	}
+
+	@Override
 	public void run() {
 		dao.createTable(DGTranLogBean.class);
 		while (true) {
-			try { 
+			try {
 				handle();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -99,8 +105,8 @@ public class DGTransferTokenOutTask extends TaskImpl {
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
-		poll.get().put("broadcast", sendTran.getDate().toString());
-		Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate().toString());// 广播
+		poll.get().put("broadcast", sendTran.getDate());
+		Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
 		// 无论成功与否都修改为以转出
 		poll.setTo_hash(broadcastTran.getDate().toString());
 		poll.setLog_status(DGTranLogBean.log_status_2);

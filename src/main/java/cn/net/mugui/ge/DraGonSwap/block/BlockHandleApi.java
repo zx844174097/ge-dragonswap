@@ -51,7 +51,7 @@ public interface BlockHandleApi {
 	 * @return
 	 */
 
-	Message broadcastTran(String send_msg)throws Exception;
+	Message broadcastTran(Object send_msg)throws Exception;
 	/**
 	 * 通过私钥得到地址
 	 * @param pri

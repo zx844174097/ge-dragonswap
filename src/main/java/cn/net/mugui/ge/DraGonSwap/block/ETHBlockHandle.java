@@ -45,8 +45,8 @@ public class ETHBlockHandle implements BlockHandleApi {
 	}
 
 	@Override
-	public Message broadcastTran(String send_msg) throws Exception {
-		EthSendTransaction ethSendTransaction = ethBlock.getEthSendTransaction(send_msg);
+	public Message broadcastTran(Object send_msg) throws Exception {
+		EthSendTransaction ethSendTransaction = ethBlock.getEthSendTransaction(send_msg.toString());
 		String transactionHash = ethSendTransaction.getTransactionHash();
 		if (ethSendTransaction.getError() != null || transactionHash == null) {
 			return Message.error("交易失败");

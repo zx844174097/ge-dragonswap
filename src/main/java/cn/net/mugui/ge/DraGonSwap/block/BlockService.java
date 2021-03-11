@@ -45,7 +45,7 @@ public class BlockService {
 	 * @param send_msg
 	 * @return
 	 */
-	public Message broadcastTran(String block_name, String send_msg) {
+	public Message broadcastTran(String block_name, Object send_msg) {
 		try {
 			return getBlockHandleApi(block_name).broadcastTran(send_msg);
 		} catch (Exception e) {

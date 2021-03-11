@@ -87,10 +87,10 @@ public class DGCertTask extends TaskImpl {
 				sysConfApi.setValue("dg_cert_handle_index", blockChainBean.getTran_id().toString());
 
 				Object redis = redisUtil.getRedis("wait_" + blockChainBean.getHash());
-				PushRemarkBean remarkBean = PushRemarkBean.newBean(PushRemarkBean.class, redis);
-				if (remarkBean == null) {
+				if (redis == null) {
 					continue;
 				}
+				PushRemarkBean remarkBean = PushRemarkBean.newBean(PushRemarkBean.class, redis);
 				if (remarkBean.getType() != 1) {
 					continue;
 				}

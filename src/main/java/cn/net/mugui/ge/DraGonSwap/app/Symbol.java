@@ -179,7 +179,7 @@ public class Symbol implements Mugui {
 			DGAddressBindBean ETH = new DGAddressBindBean();
 			ETH.setPub(public_key_eth);
 			ETH.setBlock_name("ETH");
-			addressByPub = blockService.getAddressByPub(ETH.getBlock_name(), ETH.getPub());
+			addressByPub = blockService.getAddressByPub(ETH.getBlock_name(), ETH.getPub().substring(2));
 			ETH.setAddress(addressByPub);
 			ETH.setDatum_address(dgAddressBindBean.getAddress());
 			ETH = dao.save(ETH);

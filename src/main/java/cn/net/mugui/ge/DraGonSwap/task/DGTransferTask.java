@@ -4,36 +4,28 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hx.blockchain.bean.BlockChainTransactionBean;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
-import com.mugui.sql.SqlModeApi;
 import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
+
 import cn.net.mugui.ge.DraGonSwap.admin.SymbolAdmin;
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.PushRemarkBean;
-import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
-import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.DraGonSwap.util.AddressBindUtil;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolConfUtil;
-import cn.net.mugui.ge.DraGonSwap.util.DGSymbolDescriptUtil;
-import cn.net.mugui.ge.block.tron.TRC20.TransferTransaction;
-import cn.net.mugui.ge.sys.service.SysConfApi;
 import cn.net.mugui.ge.util.RedisUtil;
 
 /**
@@ -94,15 +86,14 @@ public class DGTransferTask extends TaskImpl {
 				
 				Object byNullRedis = redisUtil.getRedis("wait_" + log.getFrom_hash());
 				PushRemarkBean newBean = PushRemarkBean.newBean(PushRemarkBean.class, byNullRedis);
-				if (newBean != null) {
-					if (newBean.getType() != 0) {
+				if (byNullRedis != null) {
+					if (newBean.getType()==null||newBean.getType() != 0) {
 						continue;
 					}
 					log.setTo_limit_num(newBean.getLimit_min());
 					log.setTo_limit_time(newBean.getLimit_time());
 				} else {
-					log.setTo_limit_num(BigDecimal.ZERO);
-					log.setTo_limit_time(0L);
+					continue;
 				}
 
 				DGPriAddressBean dgPriAddressBean = new DGPriAddressBean().setAddress(blockChainBean.getTo());

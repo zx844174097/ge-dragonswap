@@ -34,8 +34,8 @@ public class BTCBlockHandle  implements BlockHandleApi {
 	}
 
 	@Override
-	public Message broadcastTran(String send_msg) throws Exception {
-		String transactionHash =  btcblock.getSendTransaction(send_msg);
+	public Message broadcastTran(Object send_msg) throws Exception {
+		String transactionHash =  btcblock.getSendTransaction(send_msg.toString());
 		if (transactionHash == null) {
 			return Message.error("交易失败");
 		}
