@@ -33,6 +33,7 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 		long lastBlock = blockHandleApi.getLastBlock();
 		if (lastBlock > Integer.parseInt(value)) {
 			for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
+				System.out.println(getName() + "->" + i);
 				conf.setValue(getName() + "_tran_log_index", i + "");
 				Object tran = blockHandleApi.getTran(i);
 				handle(tran);
