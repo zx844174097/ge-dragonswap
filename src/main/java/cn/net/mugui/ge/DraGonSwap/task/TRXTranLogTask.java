@@ -30,7 +30,7 @@ import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.block.tron.TRC20.ContractEvent;
 
 @AutoTask
-@Task(blank = 10000, value = Task.CYCLE)
+@Task(blank = 1000, value = Task.CYCLE)
 public class TRXTranLogTask extends TaskImpl {
 	private static final String TRON_SCAN = "TRX_LOG";
 
