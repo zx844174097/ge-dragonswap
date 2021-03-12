@@ -175,6 +175,7 @@ public class DGTransferTask extends TaskImpl {
 			log.setTo_block(block_name);
 			log.setTo_token(select.getContract_address());
 			log.setTo_token_name(select.getSymbol());
+			log.setFee_num(dgSymbol.getFee_scale().multiply(bc_amount));
 		} else {// 以计价金额入金
 			if (dgSymbol.getQuote_min_amt().compareTo(bc_amount) > 0) {
 				log.setLog_status(DGTranLogBean.log_status_3);
@@ -205,6 +206,7 @@ public class DGTransferTask extends TaskImpl {
 			log.setTo_block(block_name);
 			log.setTo_token(select.getContract_address());
 			log.setTo_token_name(select.getSymbol());
+			log.setFee_num(dgSymbol.getFee_scale().multiply(bc_amount));
 		}
 		log.setLog_status(DGTranLogBean.log_status_0);
 		log = dao.save(log);

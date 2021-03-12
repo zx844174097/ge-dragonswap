@@ -34,13 +34,13 @@ public class DGSymbolDescriptBean extends JsonBean {
 	/**
 	 * 基本币种总量
 	 */
-	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "0")
+	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "0",DATA_TYPE = "varchar(32)")
 	private BigDecimal base_num;
 
 	/**
 	 * 计价币种总量
 	 */
-	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "0")
+	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "0",DATA_TYPE = "varchar(32)")
 	private BigDecimal quote_num;
 
 	/**
@@ -64,10 +64,7 @@ public class DGSymbolDescriptBean extends JsonBean {
 	 */
 	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "0")
 	private BigDecimal reverse_scale;
-	
-	@SQLField(DEFAULT=true,DEFAULT_text="0.01")
-	private BigDecimal fee_scale;
-	
+
 
 	@SQLField(NULL = false, DEFAULT = true, DEFAULT_text = "CURRENT_TIMESTAMP")
 	private Date symbol_descript_create_time;

@@ -91,6 +91,12 @@ public class DGSymbolBean extends JsonBean {
 	@SQLField(NULL = false)
 	private BigDecimal quote_max_amt;
 	
+	/**
+	 * 手续费比例
+	 */
+	@SQLField(DEFAULT = true,DEFAULT_text = "0.02")
+	private BigDecimal fee_scale;
+	
 	@SQLField(NULL = false,DEFAULT = true, DEFAULT_text = "CURRENT_TIMESTAMP")
 	private Date symbol_create_time;
 	

@@ -108,6 +108,9 @@ public class DGTranLogBean extends JsonBean {
 	 */
 	@SQLField
 	private String to_hash;
+	
+	@SQLField(DEFAULT = true,DEFAULT_text = "0")
+	private BigDecimal fee_num;
 
 	/**
 	 * 兑换比例 （1个基本币种可兑换多少个计价币种）

@@ -1,11 +1,11 @@
 package cn.net.mugui.ge.DraGonSwap.util;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
@@ -26,6 +26,9 @@ public class DGSymbolDescriptUtil {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			symbol_des.setBase_num(symbol_des.getBase_num().add(base));
 			symbol_des.setQuote_num(symbol_des.getQuote_num().add(quotes));
+			symbol_des.setScale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 8, BigDecimal.ROUND_DOWN));
+			symbol_des.setReverse_scale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 8, BigDecimal.ROUND_DOWN));
+			symbol_des.setSymbol_descript_update_time(new Date());
 			dgDao.updata(symbol_des);
 		}
 	}
@@ -46,6 +49,9 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			symbol_des.setBase_num(add);
 			symbol_des.setQuote_num(quote_num);
+			symbol_des.setScale(add.divide(quote_num, 8, BigDecimal.ROUND_DOWN));
+			symbol_des.setReverse_scale(quote_num.divide(add, 8, BigDecimal.ROUND_DOWN));
+			symbol_des.setSymbol_descript_update_time(new Date());
 			dgDao.updata(symbol_des);
 			return subtract;
 		}
@@ -110,6 +116,9 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = symbol_des.getBase_num().subtract(quote_num);
 			symbol_des.setQuote_num(add);
 			symbol_des.setBase_num(quote_num);
+			symbol_des.setScale(add.divide(quote_num, 8, BigDecimal.ROUND_DOWN));
+			symbol_des.setReverse_scale(quote_num.divide(add, 8, BigDecimal.ROUND_DOWN));
+			symbol_des.setSymbol_descript_update_time(new Date());
 			dgDao.updata(symbol_des);
 			return subtract;
 		}

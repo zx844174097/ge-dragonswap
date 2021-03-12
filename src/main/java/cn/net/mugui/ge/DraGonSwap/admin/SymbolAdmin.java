@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hx.api.wallet.service.WalletServiceApi;
 import com.mugui.Mugui;
 import com.mugui.spring.base.Module;
 import com.mugui.spring.net.authority.Authority;
@@ -19,14 +18,12 @@ import com.mugui.spring.net.bean.NetBag;
 import com.mugui.sql.SqlModeApi;
 import com.mugui.wallet.controller.TronServiceApi;
 
-import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolCreateBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
-import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.user.entity.UserBindAddressBean;
 import cn.net.mugui.ge.util.SessionImpl;
 
@@ -94,13 +91,14 @@ public class SymbolAdmin implements Mugui {
 		priBean = dao.save(priBean);
 
 		{// 流动性凭证私钥
-			String createMnemonic = (String) tronServiceApi.create();
-			priBean = new DGSymbolPriBean();
-			priBean.setDg_symbol_id(save.getDg_symbol_id());
-			priBean.setType(DGSymbolPriBean.type_1);
-			JSONObject parseObject = JSONObject.parseObject(createMnemonic);
-			priBean.setPri(parseObject.getString("pri"));
-			priBean = dao.save(priBean);
+			DGSymbolPriBean criBean = new DGSymbolPriBean();
+			criBean.setDg_symbol_id(save.getDg_symbol_id());
+			criBean.setType(DGSymbolPriBean.type_1);
+//			String createMnemonic = (String) tronServiceApi.create();
+//			JSONObject parseObject = JSONObject.parseObject(createMnemonic);
+//			priBean.setPri(parseObject.getString("pri"));
+			criBean.setPri(priBean.getPri()); 
+			criBean = dao.save(criBean);
 		}
 
 		bean.setDg_symbol_id(save.getDg_symbol_id());
@@ -173,6 +171,7 @@ public class SymbolAdmin implements Mugui {
 		}
 		return Message.ok("更新成功");
 	}
+
 	/**
 	 * 交易对列表
 	 * 

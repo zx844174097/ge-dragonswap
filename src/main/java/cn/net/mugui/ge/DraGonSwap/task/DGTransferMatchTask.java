@@ -118,6 +118,8 @@ public class DGTransferMatchTask extends TaskImpl {
 	private void handle(DGTranLogBean bean, Iterator<DGTranLogBean> iterator) throws SQLException, Exception {
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
 		BigDecimal bc_amount = bean.getFrom_num();
+		BigDecimal fee_num = bean.getFee_num();
+		bc_amount=bc_amount.subtract(fee_num); 
 		String[] split = bean.getDg_symbol().split("[/]");
 		if (split[0].equals(bean.getFrom_token_name())) {// 基本币种
 
