@@ -77,7 +77,7 @@ public class DGCertTask extends TaskImpl {
 		while (true) {
 			String value = sysConfApi.getValue("dg_cert_handle_index");
 			if (StringUtils.isBlank(value)) {
-				sysConfApi.save("dg_cert_handle_index", value = "", "流动性凭证处理index");
+				sysConfApi.save("dg_cert_handle_index", value = "0", "流动性凭证处理index");
 			}
 			if (!Other.isInteger(value)) {
 				return;

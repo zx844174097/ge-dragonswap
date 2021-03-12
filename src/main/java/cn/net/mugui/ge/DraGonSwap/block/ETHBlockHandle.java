@@ -68,14 +68,15 @@ public class ETHBlockHandle implements BlockHandleApi {
 
 	@Override
 	public Object getTran(long tran_index) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
-
+/**
+ * eth_blockNumber 最新块
+ */
 	@Override
 	public long getLastBlock() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 	ethBlock.blockNumber();
 	}
 
 }

@@ -30,7 +30,7 @@ import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.block.tron.TRC20.ContractEvent;
 
 @AutoTask
-@Task(blank = 1000, value = Task.CYCLE)
+@Task()
 public class TRXTranLogTask extends TaskImpl {
 	private static final String TRON_SCAN = "TRX_LOG";
 
@@ -158,6 +158,18 @@ public class TRXTranLogTask extends TaskImpl {
 
 	@Override
 	public void run() {
+		while(true) {
+			try {
+				Run();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Other.sleep(1000);
+		}
+		
+	}
+
+	private void Run() {
 		BlockHandleApi blockHandleApi = blockManager.get(getName());
 		String value = conf.getValue(getName() + "_tran_log_index");
 		if (value == null) {
@@ -171,11 +183,11 @@ public class TRXTranLogTask extends TaskImpl {
 		if(lastBlock<Integer.parseInt(value) ) {
 			return;
 		}
-		conf.setValue(getName() + "_tran_log_index", lastBlock + "");
 		int corePoolSize = TRON_SCAN_TASK.getCorePoolSize();
 		for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
 			redisClient.opsForList().rightPush(TRON_SCAN + "_" + (i % corePoolSize), i + "");
 		}
+		conf.setValue(getName() + "_tran_log_index", lastBlock + "");
 	}
 
 }

@@ -70,7 +70,7 @@ public class DGTransferTask extends TaskImpl {
 
 			String value = sysConfApi.getValue("dg_tran_handle_index");
 			if (StringUtils.isBlank(value)) {
-				sysConfApi.save("dg_tran_handle_index", value = "", "流动性凭证处理index");
+				sysConfApi.save("dg_tran_handle_index", value = "0", "流动性凭证处理index");
 			}
 			if (!Other.isInteger(value)) {
 				return;
