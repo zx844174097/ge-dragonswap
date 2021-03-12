@@ -48,7 +48,7 @@ public class DGCertTask extends TaskImpl {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			Other.sleep(10000);
+			Other.sleep(1000);
 		}
 	}
 

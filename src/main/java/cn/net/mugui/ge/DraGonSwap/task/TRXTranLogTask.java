@@ -1,11 +1,9 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -13,7 +11,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import com.mugui.ex.mod.minepool.task.ListenerBalanceBean;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
@@ -23,7 +20,6 @@ import com.mugui.util.Other;
 import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.thread.RejectPolicy;
-import cn.hutool.core.thread.ThreadUtil;
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
@@ -80,7 +76,7 @@ public class TRXTranLogTask extends TaskImpl {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				Other.sleep(4000);
+				Other.sleep(1000);
 			}
 
 		}
