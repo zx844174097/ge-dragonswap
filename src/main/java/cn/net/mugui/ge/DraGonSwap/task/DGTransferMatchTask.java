@@ -127,7 +127,7 @@ public class DGTransferMatchTask extends TaskImpl {
 
 			boolean bol = dgSymbolDescriptUtil.reckonInBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 			if (bol) {
-				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean);
+				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean,fee_num);
 				bean.setTo_num(inBase);
 				bean.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
@@ -140,7 +140,7 @@ public class DGTransferMatchTask extends TaskImpl {
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[0]);
 			boolean bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 			if (bol) {
-				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean);
+				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean,fee_num);
 				bean.setTo_num(inQuote);
 				bean.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);

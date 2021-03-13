@@ -1,13 +1,18 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mugui.spring.TaskImpl;
 import com.mugui.util.Other;
 
+import cn.hutool.core.thread.ExecutorBuilder;
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
+import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 
 public abstract class DefaultTranLogTask extends TaskImpl {
@@ -20,12 +25,17 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 	@Autowired
 	private DGConf conf;
 
+	@Autowired
+	private DGDao dao;
+
+	ThreadPoolExecutor build = ExecutorBuilder.create().setMaxPoolSize(5).build();
+
 	@Override
 	public void run() {
 		BlockHandleApi blockHandleApi = blockManager.get(getName());
 		String value = conf.getValue(getName() + "_tran_log_index");
 		if (value == null) {
-			conf.save(getName() + "_tran_log_index", value = "0", getName() + "区块交易扫描id");
+			conf.save(getName() + "_tran_log_index", value = "12023208", getName() + "区块交易扫描id");
 		}
 		if (!Other.isInteger(value)) {
 			return;
@@ -33,15 +43,36 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 		long lastBlock = blockHandleApi.getLastBlock();
 		if (lastBlock > Integer.parseInt(value)) {
 			for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
-				System.out.println(getName() + "->" + i);
+				build.execute(new TempRunnable(i, blockHandleApi));
 				conf.setValue(getName() + "_tran_log_index", i + "");
-				Object tran = blockHandleApi.getTran(i);
-				handle(tran);
+			}
+		}
+	}
+
+	private class TempRunnable implements Runnable {
+		private Integer i;
+		BlockHandleApi blockHandleApi;
+
+		TempRunnable(Integer i, BlockHandleApi blockHandleApi) {
+			this.i = i;
+			this.blockHandleApi = blockHandleApi;
+		}
+
+		@Override
+		public void run() {
+			Object tran = null;
+			do {
+				tran = blockHandleApi.getTran(i);
+			} while (tran == null);
+			System.out.println(getName() + "->" + i);
+			List<BlockTranBean> handle = handle(tran);
+			for (BlockTranBean bean : handle) {
+				dao.save(bean);
 			}
 		}
 
 	}
 
-	protected abstract BlockTranBean handle(Object tran);
+	protected abstract List<BlockTranBean> handle(Object tran);
 
 }

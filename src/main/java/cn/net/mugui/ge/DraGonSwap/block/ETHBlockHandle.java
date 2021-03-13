@@ -2,7 +2,6 @@ package cn.net.mugui.ge.DraGonSwap.block;
 
 import java.math.BigDecimal;
 
-import org.bouncycastle.util.encoders.Hex;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.Transaction;
@@ -56,7 +55,7 @@ public class ETHBlockHandle implements BlockHandleApi {
 
 	@Override
 	public String getAddressByPri(String pri) {
-		return "0x" + Hex.toHexString(ethBlock.getECKey(pri).getAddress());
+		return ethBlock.getECKey(pri).getAddress();
 	}
 
 	@Override
@@ -68,8 +67,7 @@ public class ETHBlockHandle implements BlockHandleApi {
 
 	@Override
 	public Object getTran(long tran_index) {
-		
-		return null;
+		return ethBlock.getBlockByNumber(tran_index);
 	}
 /**
  * eth_blockNumber 最新块

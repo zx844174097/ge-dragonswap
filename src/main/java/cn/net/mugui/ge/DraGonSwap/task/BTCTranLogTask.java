@@ -1,5 +1,7 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
+import java.util.List;
+
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 
@@ -15,7 +17,7 @@ public class BTCTranLogTask extends DefaultTranLogTask{
 	}
 
 	@Override
-	protected BlockTranBean handle(Object tran) {
+	protected List<BlockTranBean> handle(Object tran) {
 		return null;
 	}
 
