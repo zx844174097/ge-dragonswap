@@ -76,6 +76,7 @@ public class Symbol implements Mugui {
 
 			SwapBean swapBean = manager.get(dgSymbolBean.getSymbol());
 			jsonObject.putAll(swapBean.symbol_des.get());
+			jsonObject.put("token_address", swapBean.create.getToken_address());
 			array.add(jsonObject);
 		}
 		return Message.ok(array);
