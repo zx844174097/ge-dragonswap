@@ -38,15 +38,14 @@ public class DGCertRansomTask {
 	private DGSymbolConfUtil confUtil;
 
 	public boolean handle(BlockTranBean blockChainBean, DGSymbolBean dgSymbol) {
-		DGSymbolCreateBean select = dao.select(new DGSymbolCreateBean().setDg_symbol_id(dgSymbol.getDg_symbol_id()));
+		SwapBean swapBean = manager.get(dgSymbol.getSymbol());
+		DGSymbolCreateBean select = swapBean.create;
 		if (select == null) {
 			return false;
 		}
 		if (!select.getToken_address().equals(blockChainBean.getToken())) {
 			return false;
 		}
-		SwapBean swapBean = manager.get(dgSymbol.getSymbol());
-
 		BigDecimal num = blockChainBean.getNum();
 		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbol.getSymbol()).setToken_3(select.getToken_address()).setUser_address(blockChainBean.getFrom()).setToken_num(num);
 		dgKeepTranLogBean.setKeep_type(DGKeepBean.keep_type_1);

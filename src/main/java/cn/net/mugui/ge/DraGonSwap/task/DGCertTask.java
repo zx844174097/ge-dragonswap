@@ -175,8 +175,9 @@ public class DGCertTask extends TaskImpl {
 				dgKeepBean.setBase_num(transactionBean.getNum());
 				dgKeepBean.setQuotes_num(blockChainBean.getNum());
 			}
+			SwapBean swapBean = manager.get(dgSymbol.getSymbol());
 			// 判断比例是否正常
-			DGSymbolCreateBean select2 = dao.select(new DGSymbolCreateBean().setDg_symbol_id(dgSymbol.getDg_symbol_id()));
+			DGSymbolCreateBean select2 = swapBean.create;
 			if (select2.getBase_init_number().compareTo(BigDecimal.ZERO) <= 0) {// 交易对的第一次入金
 				select2.setBase_init_number(dgKeepBean.getBase_num()).setQuote_init_number(dgKeepBean.getQuotes_num()).setCreate_address(dgKeepBean.getUser_address());
 				// 初始比例
@@ -190,7 +191,6 @@ public class DGCertTask extends TaskImpl {
 			// dgKeepBean.getQuotes_keep_num().divide(dgKeepBean.getBase_keep_num(), 8,
 			// BigDecimal.ROUND_DOWN);
 
-			SwapBean swapBean = manager.get(dgSymbol.getSymbol());
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal divide2 = null;
 			if (symbol_des.getScale().compareTo(BigDecimal.ZERO) <= 0) {
