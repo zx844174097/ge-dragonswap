@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mugui.spring.TaskImpl;
 import com.mugui.util.Other;
 
-import cn.hutool.core.thread.ExecutorBuilder;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
@@ -28,7 +28,7 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 	@Autowired
 	private DGDao dao;
 
-	ThreadPoolExecutor build = ExecutorBuilder.create().setMaxPoolSize(5).build();
+	ThreadPoolExecutor build = ThreadUtil.newExecutor(5, 5);
 
 	@Override
 	public void run() {
