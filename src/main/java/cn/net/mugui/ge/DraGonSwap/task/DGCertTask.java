@@ -88,7 +88,7 @@ public class DGCertTask extends TaskImpl {
 				return;
 			}
 			List<BlockTranBean> selectList = dao.selectList(BlockTranBean.class, Select.q(new BlockTranBean()).where(Where.q().gt("tran_id", value)));
-			if(selectList.isEmpty()) {
+			if (selectList.isEmpty()) {
 				return;
 			}
 			for (BlockTranBean blockChainBean : selectList) {
@@ -217,10 +217,12 @@ public class DGCertTask extends TaskImpl {
 
 			dgKeepBean.setToken_num(divide2);
 
-			DGKeepBean last = dao.select(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()));
+			DGKeepBean last = dao.select(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7));
 			BigDecimal last_big = BigDecimal.ZERO;
 			if (last != null) {
 				last_big = last.getNow_out_cert_token_num();
+			} else {
+				last_big = BigDecimal.ZERO;
 			}
 
 			DGSymbolConfBean select = confUtil.getByContract_address(select2.getToken_address());

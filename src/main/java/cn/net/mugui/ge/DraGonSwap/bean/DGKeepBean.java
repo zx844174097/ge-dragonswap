@@ -110,7 +110,7 @@ public class DGKeepBean extends JsonBean {
 	/**
 	 * 代币转出完成
 	 */
-	public static final int KEEP_STATUS_4 = 4;
+//	public static final int KEEP_STATUS_4 = 4;
 
 	/**
 	 * 资金池出金进行中
@@ -120,7 +120,8 @@ public class DGKeepBean extends JsonBean {
 	/**
 	 * 资金池出金已完成
 	 */
-	public static final int KEEP_STATUS_6 = 6;
+//	public static final int KEEP_STATUS_6 = 6;
+	public static final int KEEP_STATUS_7 = 7;
 
 	/**
 	 * 持有状态
@@ -146,12 +147,12 @@ public class DGKeepBean extends JsonBean {
 	/**
 	 * 前一次流动性总量
 	 */
-	@SQLField(DATA_TYPE = "varchar(64)")
+	@SQLField(DATA_TYPE = "varchar(64)",DEFAULT = true,DEFAULT_text = "0",NULL = false)
 	private BigDecimal last_out_cert_token_num;
 	/**
 	 * 当前流动性总量
 	 */
-	@SQLField(DATA_TYPE = "varchar(64)")
+	@SQLField(DATA_TYPE = "varchar(64)",DEFAULT = true,DEFAULT_text = "0",NULL = false)
 	private BigDecimal now_out_cert_token_num;
 
 	/**

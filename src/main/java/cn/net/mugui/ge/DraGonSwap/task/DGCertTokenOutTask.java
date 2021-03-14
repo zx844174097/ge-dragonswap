@@ -75,7 +75,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 				case DGKeepBean.KEEP_STATUS_3:
 					// 判断交易是否成功
 					if (isSucess(poll)) {
-						poll.setKeep_status(DGKeepBean.KEEP_STATUS_4);
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
 						dao.updata(poll);
 						break;
 					}
@@ -93,7 +93,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 				case DGKeepBean.KEEP_STATUS_5:
 					// 判断交易是否成功
 					if (isSucessFunds(poll)) {
-						poll.setKeep_status(DGKeepBean.KEEP_STATUS_6);
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
 						dao.updata(poll);
 						break;
 					}

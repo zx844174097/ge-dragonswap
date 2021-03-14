@@ -24,6 +24,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.PushRemarkBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
@@ -109,6 +110,14 @@ public class Symbol implements Mugui {
 
 	}
 
+	public Message tranLog(NetBag bag) {
+		PageUtil.offsetPage(bag);
+		DGTranLogBean newBean = DGTranLogBean.newBean(DGTranLogBean.class, bag.getData());
+		JSONArray selectArrayDESC = dao.selectArrayDESC(newBean);
+		Integer count = dao.count(newBean);
+		return Message.ok(selectArrayDESC).setExtra(count + "");
+	}
+
 	/**
 	 * 得到某交易对的基本描述
 	 * 
@@ -130,7 +139,7 @@ public class Symbol implements Mugui {
 		if (select != null) {
 			jsonObject.putAll(select.get());
 		}
-		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol());
+		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7);
 		DGKeepBean select2 = dao.select(dgKeepTranLogBean);
 		if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 			jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());

@@ -184,7 +184,7 @@ public class TRXTranLogTask extends TaskImpl {
 			return;
 		}
 		int corePoolSize = TRON_SCAN_TASK.getCorePoolSize();
-		for (int i = Integer.parseInt(value) - 5 + 1; i <= lastBlock; i++) {
+		for (int i = Integer.parseInt(value) - 2 + 1; i <= lastBlock; i++) {
 			redisClient.opsForList().rightPush(TRON_SCAN + "_" + (i % corePoolSize), i + "");
 		}
 		conf.setValue(getName() + "_tran_log_index", lastBlock + "");
