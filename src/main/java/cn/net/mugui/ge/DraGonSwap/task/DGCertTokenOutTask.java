@@ -28,9 +28,11 @@ public class DGCertTokenOutTask extends TaskImpl {
 	@Override
 	public void init() {
 		super.init();
-		List<DGKeepBean> selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_2));
+		List<DGKeepBean> selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_2).setKeep_type(DGKeepBean.keep_type_0));
 		linkedList.addAll(selectList);
-		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_3));
+		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_3).setKeep_type(DGKeepBean.keep_type_0));
+		linkedList.addAll(selectList);
+		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_0).setKeep_type(DGKeepBean.keep_type_1));
 		linkedList.addAll(selectList);
 	}
 
@@ -146,12 +148,12 @@ public class DGCertTokenOutTask extends TaskImpl {
 		}
 
 		poll.get().put("broadcast1", base_msg.getDate());
-		Message broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), base_msg.getDate());// 广播
+		Message broadcastTran = blockservice.broadcastTran(poll.getBlock_1(), base_msg.getDate());// 广播
 		// 无论成功与否都修改为以转出
 		poll.setHash_1(broadcastTran.getDate().toString());
 
 		poll.get().put("broadcast2", quote_msg.getDate());
-		broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), quote_msg.getDate());// 广播
+		broadcastTran = blockservice.broadcastTran(poll.getBlock_2(), quote_msg.getDate());// 广播
 		// 无论成功与否都修改为以转出
 		poll.setHash_2(broadcastTran.getDate().toString());
 		poll.setKeep_status(DGKeepBean.KEEP_STATUS_5);
