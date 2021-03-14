@@ -87,6 +87,7 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 		swapBean.pri_tran = dao.select(new DGSymbolPriBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id()).setType(DGSymbolPriBean.type_0));
 		swapBean.symbol = dgSymbolBean;
 		swapBean.symbol_des = dao.select(new DGSymbolDescriptBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id()));
+		swapBean.create = dao.select(new DGSymbolCreateBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id()));
 		add(swapBean.swap_name, swapBean);
 
 		priAddressCache.init(null);

@@ -26,6 +26,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolCreateBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
+import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.user.entity.UserBindAddressBean;
 import cn.net.mugui.ge.util.SessionImpl;
 
@@ -173,6 +174,7 @@ public class SymbolAdmin implements Mugui {
 				bag.setRet_data(descriptBean.getDg_symbol_id());
 				dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
 				dao.updata(dgSymbolBean);
+				manager.add(dgSymbolBean.getSymbol());
 				return Message.ok("更新成功");
 			}
 			bag.setRet_data(descriptBean.getDg_symbol_id());
@@ -185,7 +187,8 @@ public class SymbolAdmin implements Mugui {
 		}
 		return Message.ok("更新成功");
 	}
-
+	@Autowired
+	private DSymbolManager manager;
 	/**
 	 * 交易对列表
 	 * 
