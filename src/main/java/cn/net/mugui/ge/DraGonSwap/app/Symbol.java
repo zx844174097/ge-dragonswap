@@ -82,6 +82,9 @@ public class Symbol implements Mugui {
 			DGKeepBean select2 = dao.select(dgKeepTranLogBean);
 			if (select2 != null) {
 				jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
+			}else {
+
+				jsonObject.put("now_out_cert_token_num", "0");
 			}
 			array.add(jsonObject);
 		}
