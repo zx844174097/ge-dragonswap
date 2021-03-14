@@ -2,6 +2,7 @@ package cn.net.mugui.ge.DraGonSwap.admin;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mugui.Mugui;
 import com.mugui.spring.base.Module;
@@ -191,7 +193,16 @@ public class SymbolAdmin implements Mugui {
 	 * @return
 	 */
 	public Message list(NetBag bag) {
-		return Message.ok(dao.select(new DGSymbolBean()));
+		List<DGSymbolBean> selectList = dao.selectList(new DGSymbolBean());
+		JSONArray array = new JSONArray();
+		for (DGSymbolBean symbolBean : selectList) {
+			JSONObject json = symbolBean.toJson();
+			json.putAll(dao.select(new DGSymbolCreateBean().setDg_symbol_id(symbolBean.getDg_symbol_id())).toJson());
+			json.putAll(dao.select(new DGSymbolDescriptBean().setDg_symbol_id(symbolBean.getDg_symbol_id())).toJson());
+			json.putAll(dao.select(new DGSymbolPriBean().setDg_symbol_id(symbolBean.getDg_symbol_id())).toJson());
+			array.add(json);
+		}
+		return Message.ok(array);
 	}
 
 }
