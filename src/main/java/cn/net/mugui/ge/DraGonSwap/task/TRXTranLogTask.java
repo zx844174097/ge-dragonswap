@@ -45,7 +45,7 @@ public class TRXTranLogTask extends TaskImpl {
 		blockHandleApi = (TRXBlockHandle) blockManager.get(getName());
 		initListenerAddress();
 		for (int i = 0; i < TRON_SCAN_TASK.getCorePoolSize(); i++) {
-			TRON_SCAN_TASK.execute(new TRXTranLogRunnable(TRON_SCAN + "_" + i));	
+			TRON_SCAN_TASK.execute(new TRXTranLogRunnable(TRON_SCAN + "_" + i));
 		}
 	}
 
@@ -89,8 +89,8 @@ public class TRXTranLogTask extends TaskImpl {
 				}
 				System.out.println(leftPop);
 				Object tran = blockHandleApi.getTran(Long.parseLong(leftPop));
-				while(tran==null) {
-					tran=blockHandleApi.getTran(Long.parseLong(leftPop));
+				while (tran == null) {
+					tran = blockHandleApi.getTran(Long.parseLong(leftPop));
 					Other.sleep(1000);
 				}
 				List<BlockTranBean> handle = TRXTranLogTask.this.handle(tran);
@@ -158,7 +158,7 @@ public class TRXTranLogTask extends TaskImpl {
 
 	@Override
 	public void run() {
-		while(true) {
+		while (true) {
 			try {
 				Run();
 			} catch (Exception e) {
@@ -166,7 +166,7 @@ public class TRXTranLogTask extends TaskImpl {
 			}
 			Other.sleep(1000);
 		}
-		
+
 	}
 
 	private void Run() {
@@ -180,11 +180,11 @@ public class TRXTranLogTask extends TaskImpl {
 		}
 
 		long lastBlock = blockHandleApi.getLastBlock();
-		if(lastBlock<Integer.parseInt(value) ) {
+		if (lastBlock < Integer.parseInt(value)) {
 			return;
 		}
 		int corePoolSize = TRON_SCAN_TASK.getCorePoolSize();
-		for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
+		for (int i = Integer.parseInt(value) - 5 + 1; i <= lastBlock; i++) {
 			redisClient.opsForList().rightPush(TRON_SCAN + "_" + (i % corePoolSize), i + "");
 		}
 		conf.setValue(getName() + "_tran_log_index", lastBlock + "");
