@@ -217,7 +217,7 @@ public class DGCertTask extends TaskImpl {
 
 			dgKeepBean.setToken_num(divide2);
 
-			DGKeepBean last = dao.select(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7));
+			DGKeepBean last = dao.selectDESC(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7));
 			BigDecimal last_big = BigDecimal.ZERO;
 			if (last != null) {
 				last_big = last.getNow_out_cert_token_num();
