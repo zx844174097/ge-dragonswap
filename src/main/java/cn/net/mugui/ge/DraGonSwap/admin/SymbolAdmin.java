@@ -191,8 +191,7 @@ public class SymbolAdmin implements Mugui {
 	 * @return
 	 */
 	public Message list(NetBag bag) {
-
-		return Message.ok();
+		return Message.ok(dao.select(new DGSymbolBean()));
 	}
 
 }
