@@ -39,52 +39,53 @@ public class DGKeepBean extends JsonBean {
 	private String dg_symbol;
 
 	/**
+	 * 基本量
+	 */
+	@SQLField()
+	private BigDecimal base_num;
+
+	/**
+	 * 计价量
+	 */
+	@SQLField()
+	private BigDecimal quotes_num;
+
+	/**
+	 * 代币量
+	 */
+	@SQLField()
+	private BigDecimal token_num;
+	/**
 	 * 1号币种入金hash
 	 */
 	@SQLField(DATA_TYPE = "varchar(128)")
-	private String amount_one_hash;
+	private String hash_1;
+
+	@SQLField(DATA_TYPE = "varchar(20)")
+	private String block_1;
+	@SQLField(DATA_TYPE = "varchar(64)")
+	private String token_1;
 
 	/**
 	 * 2号币种入金hash
 	 */
 	@SQLField(DATA_TYPE = "varchar(128)")
-	private String amount_two_hash;
+	private String hash_2;
 
+	@SQLField(DATA_TYPE = "varchar(20)")
+	private String block_2;
+	@SQLField(DATA_TYPE = "varchar(64)")
+	private String token_2;
 	/**
-	 * 基本币种持有量
+	 * 3号关联hash
 	 */
-	@SQLField()
-	private BigDecimal base_keep_num;
+	@SQLField(DATA_TYPE = "varchar(128)")
+	private String hash_3;
 
-	/**
-	 * 计价币种持有量
-	 */
-	@SQLField()
-	private BigDecimal quotes_keep_num;
-
-	/**
-	 * 代币地址持有量
-	 */
-	@SQLField()
-	private BigDecimal token_keep_num;
-
-	/**
-	 * 已返回的基本币种数量
-	 */
-	@SQLField( DEFAULT = true, DEFAULT_text = "0")
-	private BigDecimal recover_base_num;
-
-	/**
-	 * 已返回的计价币种数量
-	 */
-	@SQLField( DEFAULT = true, DEFAULT_text = "0")
-	private BigDecimal recover_quote_num;
-
-	/**
-	 * 已回收的代币币种持有数量
-	 */
-	@SQLField( DEFAULT = true, DEFAULT_text = "0")
-	private BigDecimal recover_token_num;
+	@SQLField(DATA_TYPE = "varchar(20)")
+	private String block_3;
+	@SQLField(DATA_TYPE = "varchar(64)")
+	private String token_3;
 
 	/**
 	 * 已创建
@@ -102,14 +103,24 @@ public class DGKeepBean extends JsonBean {
 	public static final int KEEP_STATUS_2 = 2;
 
 	/**
-	 * 入金未完成
+	 * 代币转出中
 	 */
 	public static final int KEEP_STATUS_3 = 3;
 
 	/**
-	 * 资金池全额抽出
+	 * 代币转出完成
 	 */
 	public static final int KEEP_STATUS_4 = 4;
+
+	/**
+	 * 资金池出金进行中
+	 */
+	public static final int KEEP_STATUS_5 = 5;
+
+	/**
+	 * 资金池出金已完成
+	 */
+	public static final int KEEP_STATUS_6 = 6;
 
 	/**
 	 * 持有状态
@@ -118,15 +129,35 @@ public class DGKeepBean extends JsonBean {
 	private Integer keep_status;
 
 	/**
+	 * 增加流动性，转出代币
+	 */
+	public static final int keep_type_0 = 0;
+	/**
+	 * 减少流动性，转入代币
+	 */
+	public static final int keep_type_1 = 1;
+
+	/**
+	 * 类型
+	 */
+	@SQLField(DEFAULT = true, DEFAULT_text = "0")
+	private Integer keep_type;
+
+	/**
+	 * 前一次流动性总量
+	 */
+	@SQLField(DATA_TYPE = "varchar(64)")
+	private BigDecimal last_out_cert_token_num;
+	/**
+	 * 当前流动性总量
+	 */
+	@SQLField(DATA_TYPE = "varchar(64)")
+	private BigDecimal now_out_cert_token_num;
+
+	/**
 	 * 持有创建时间
 	 */
 	@SQLField(DEFAULT = true, DEFAULT_text = "CURRENT_TIMESTAMP")
 	private Date keep_create_time;
-
-	/**
-	 * 持有更新时间
-	 */
-	@SQLField( DEFAULT = true, DEFAULT_text = "CURRENT_TIMESTAMP")
-	private Date keep_update_time;
 
 }

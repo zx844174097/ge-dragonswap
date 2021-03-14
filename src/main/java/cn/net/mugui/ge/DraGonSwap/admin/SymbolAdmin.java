@@ -57,6 +57,13 @@ public class SymbolAdmin implements Mugui {
 	public Message create(NetBag bag) {
 		DGSymbolBean dcBean = DGSymbolBean.newBean(DGSymbolBean.class, bag.getData());
 		dcBean.setSymbol(dcBean.getBase_currency() + "/" + dcBean.getQuote_currency());
+
+		if (dao.select(new DGSymbolBean().setSymbol(dcBean.getSymbol())) != null) {
+			return Message.error("该交易对已存在");
+		}
+		if (dao.select(new DGSymbolBean().setSymbol(dcBean.getQuote_currency() + "/" + dcBean.getBase_currency())) != null) {
+			return Message.error("该交易对已存在");
+		}
 		DGSymbolCreateBean bean = DGSymbolCreateBean.newBean(DGSymbolCreateBean.class, bag.getData());
 		if (bean.getCreate_address() == null) {
 			UserBindAddressBean userBindAddressBean = new UserBindAddressBean().setUser_id(SessionImpl.getUserId());
@@ -77,8 +84,11 @@ public class SymbolAdmin implements Mugui {
 		if (dgSymbolConfBean == null) {
 			dgSymbolConfBean = new DGSymbolConfBean().setPrecision(8);
 		}
-		bean.setCreate_init_price(bean.getQuote_init_number().divide(bean.getBase_init_number(), dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_HALF_UP));
-		bean.setTotal_init_number(bean.getBase_init_number().multiply(bean.getQuote_init_number()));
+		bean.setQuote_init_number(BigDecimal.ZERO).setBase_init_number(BigDecimal.ZERO);
+		bean.setCreate_init_price(BigDecimal.ZERO);
+		bean.setTotal_init_number(BigDecimal.ZERO);
+//		bean.setCreate_init_price(bean.getQuote_init_number().divide(bean.getBase_init_number(), dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_HALF_UP));
+//		bean.setTotal_init_number(bean.getBase_init_number().multiply(bean.getQuote_init_number()));
 		DGSymbolPriBean priBean = DGSymbolPriBean.newBean(DGSymbolPriBean.class, bag.getData());
 		if (StringUtils.isBlank(priBean.getPri())) {// 得到一个私钥
 			String createMnemonic = (String) tronServiceApi.create();
@@ -97,7 +107,7 @@ public class SymbolAdmin implements Mugui {
 //			String createMnemonic = (String) tronServiceApi.create();
 //			JSONObject parseObject = JSONObject.parseObject(createMnemonic);
 //			priBean.setPri(parseObject.getString("pri"));
-			criBean.setPri(priBean.getPri()); 
+			criBean.setPri(priBean.getPri());
 			criBean = dao.save(criBean);
 		}
 
@@ -146,15 +156,17 @@ public class SymbolAdmin implements Mugui {
 					dao.updata(createBean);
 				}
 				descriptBean = new DGSymbolDescriptBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
-				descriptBean.setBase_num(createBean.getBase_init_number()).setQuote_num(createBean.getQuote_init_number()).setSymbol_descript_update_time(new Date());
-				descriptBean.setTotal_num(descriptBean.getBase_num().multiply(descriptBean.getQuote_num()));
+				descriptBean.setBase_num(BigDecimal.ZERO).setQuote_num(BigDecimal.ZERO).setSymbol_descript_update_time(new Date());
+				descriptBean.setTotal_num(BigDecimal.ZERO);
 
-				DGSymbolConfBean select = dao.select(new DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
+				// DGSymbolConfBean select = dao.select(new
+				// DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
 
-				descriptBean.setScale(descriptBean.getQuote_num().divide(descriptBean.getBase_num(), select.getPrecision(), BigDecimal.ROUND_HALF_UP));
-				select = dao.select(new DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
+				descriptBean.setScale(BigDecimal.ZERO);
+				// select = dao.select(new
+				// DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
 
-				descriptBean.setReverse_scale(BigDecimal.ONE.divide(descriptBean.getScale(), select.getPrecision(), BigDecimal.ROUND_HALF_UP));
+				descriptBean.setReverse_scale(BigDecimal.ZERO);
 				descriptBean = dao.save(descriptBean);
 				bag.setRet_data(descriptBean.getDg_symbol_id());
 				dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);

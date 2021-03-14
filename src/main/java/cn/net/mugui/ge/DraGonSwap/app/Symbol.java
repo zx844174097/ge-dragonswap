@@ -20,7 +20,7 @@ import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
@@ -121,10 +121,10 @@ public class Symbol implements Mugui {
 		if (select != null) {
 			jsonObject.putAll(select.get());
 		}
-		DGKeepTranLogBean dgKeepTranLogBean = new DGKeepTranLogBean().setDg_symbol(dgSymbolBean.getSymbol());
-		DGKeepTranLogBean select2 = dao.select(dgKeepTranLogBean);
+		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol());
+		DGKeepBean select2 = dao.select(dgKeepTranLogBean);
 		if (select2 != null) {
-			jsonObject.putAll(select2.get());
+			jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 		}
 		return Message.ok(jsonObject);
 	}

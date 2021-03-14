@@ -11,7 +11,6 @@ import com.mugui.spring.net.auto.AutoManager;
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
@@ -37,7 +36,6 @@ public class DSymbolManager extends Manager<String, SwapBean> {
 	public boolean init(Object object) {
 		super.init(object);
 		dao.createTable(DGKeepBean.class);
-		dao.createTable(DGKeepTranLogBean.class);
 		dao.createTable(DGTranLogBean.class);
 		dao.createTable(DGSymbolCreateBean.class);
 		dao.createTable(DGSymbolBean.class);

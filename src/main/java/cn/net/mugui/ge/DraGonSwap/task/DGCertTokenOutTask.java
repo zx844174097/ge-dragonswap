@@ -1,6 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +11,7 @@ import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.util.Other;
 
-import cn.net.mugui.ge.DraGonSwap.bean.DGKeepTranLogBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
@@ -26,6 +25,14 @@ import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 @AutoTask
 @Task
 public class DGCertTokenOutTask extends TaskImpl {
+	@Override
+	public void init() {
+		super.init();
+		List<DGKeepBean> selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_2));
+		linkedList.addAll(selectList);
+		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_3));
+		linkedList.addAll(selectList);
+	}
 
 	@Override
 	public void run() {
@@ -45,7 +52,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 	private void handle() {
 
 		while (true) {
-			DGKeepTranLogBean poll = linkedList.poll();
+			DGKeepBean poll = linkedList.poll();
 			if (poll == null) {
 				synchronized (this) {
 					poll = linkedList.poll();
@@ -59,49 +66,120 @@ public class DGCertTokenOutTask extends TaskImpl {
 					}
 				}
 			}
+			if (poll.getKeep_type() == DGKeepBean.keep_type_0) {
+				switch (poll.getKeep_status()) {
+				case DGKeepBean.KEEP_STATUS_2:
+					send(poll);
+					break;
 
-			switch (poll.getLog_status()) {
-			case DGKeepTranLogBean.log_status_0:
-				send(poll);
-				break;
-
-			case DGKeepTranLogBean.log_status_1:
-				// 判断交易是否成功
-				if (isSucess(poll)) {
-					poll.setLog_status(DGKeepTranLogBean.log_status_2);
-					dao.updata(poll);
+				case DGKeepBean.KEEP_STATUS_3:
+					// 判断交易是否成功
+					if (isSucess(poll)) {
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_4);
+						dao.updata(poll);
+						break;
+					}
+					broadcastTran(poll);
+					break;
+				default:
 					break;
 				}
-				broadcastTran(poll);
-				break;
-			default:
-				break;
+			} else if (poll.getKeep_type() == DGKeepBean.keep_type_1) {
+				switch (poll.getKeep_status()) {
+				case DGKeepBean.KEEP_STATUS_0:
+					sendFunds(poll);
+					break;
+
+				case DGKeepBean.KEEP_STATUS_5:
+					// 判断交易是否成功
+					if (isSucessFunds(poll)) {
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_6);
+						dao.updata(poll);
+						break;
+					}
+					broadcastTranFunds(poll);
+					break;
+				default:
+					break;
+				}
 			}
+
 		}
 	}
 
-	private boolean isSucess(DGKeepTranLogBean poll) {
-		return blockservice.isSucess(poll.getBlock(), poll.getHash());
-	}
-
-	private void broadcastTran(DGKeepTranLogBean poll) {
+	/**
+	 * 广播资金池
+	 * 
+	 * @param poll
+	 */
+	private void broadcastTranFunds(DGKeepBean poll) {
 		add(poll);
-		blockservice.broadcastTran(poll.getBlock(), poll.get().getString("broadcast"));
+		blockservice.broadcastTran(poll.getBlock_1(), poll.get().get("broadcast1"));
+		blockservice.broadcastTran(poll.getBlock_2(), poll.get().get("broadcast2"));
 		return;
 	}
 
-	private void send(DGKeepTranLogBean poll) {
+	/**
+	 * 验证交易是否完成
+	 * 
+	 * @param poll
+	 * @return
+	 */
+	private boolean isSucessFunds(DGKeepBean poll) {
+		return blockservice.isSucess(poll.getBlock_1(), poll.getHash_1()) && blockservice.isSucess(poll.getBlock_2(), poll.getHash_2());
+	}
+
+	/**
+	 * 发送资金池
+	 * 
+	 * @param poll
+	 */
+	private void sendFunds(DGKeepBean poll) {
+		add(poll);
+		String pri = manager.get(poll.getDg_symbol()).pri_tran.getPri();
+		// 得到已签名数据
+		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), poll.getBase_num(), poll.getToken_1());
+		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), pri, poll.getUser_address(), poll.getQuotes_num(), poll.getToken_2());
+
+		if (base_msg.getType() != Message.SUCCESS || quote_msg.getType() != Message.SUCCESS) {
+			return;
+		}
+
+		poll.get().put("broadcast1", base_msg.getDate());
+		Message broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), base_msg.getDate());// 广播
+		// 无论成功与否都修改为以转出
+		poll.setHash_1(broadcastTran.getDate().toString());
+
+		poll.get().put("broadcast2", quote_msg.getDate());
+		broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), quote_msg.getDate());// 广播
+		// 无论成功与否都修改为以转出
+		poll.setHash_2(broadcastTran.getDate().toString());
+		poll.setKeep_status(DGKeepBean.KEEP_STATUS_5);
+		dao.updata(poll);
+	}
+
+	private boolean isSucess(DGKeepBean poll) {
+		return blockservice.isSucess(poll.getBlock_3(), poll.getHash_3());
+	}
+
+	private void broadcastTran(DGKeepBean poll) {
+		add(poll);
+		blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
+		return;
+	}
+
+	private void send(DGKeepBean poll) {
 		add(poll);
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getBlock(), manager.get(poll.getDg_symbol()).pri_tran.getPri(), poll.getTo_address(), poll.getAmount(), poll.getToken_address());
+		Message sendTran = blockservice.getSendTran(poll.getBlock_3(), manager.get(poll.getDg_symbol()).pri_tran.getPri(), poll.getUser_address(), poll.getToken_num(), poll.getToken_3());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
-		poll.get().put("broadcast", sendTran.getDate().toString());
-		Message broadcastTran = blockservice.broadcastTran(poll.getBlock(), sendTran.getDate().toString());// 广播
+		poll.get().put("broadcast", sendTran.getDate());
+		Message broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
 		// 无论成功与否都修改为以转出
-		poll.setHash(broadcastTran.getDate().toString());
-		poll.setLog_status(DGKeepTranLogBean.log_status_1);
+		poll.setHash_3(broadcastTran.getDate().toString());
+		poll.setKeep_status(DGKeepBean.KEEP_STATUS_3);
 		dao.updata(poll);
 	}
 
@@ -110,31 +188,11 @@ public class DGCertTokenOutTask extends TaskImpl {
 	@Autowired
 	private DGDao dao;
 
-	private ConcurrentLinkedDeque<DGKeepTranLogBean> linkedList = new ConcurrentLinkedDeque<>();
+	private ConcurrentLinkedDeque<DGKeepBean> linkedList = new ConcurrentLinkedDeque<>();
 
-	public void outToken(String to_address, String token, String symbol, BigDecimal num, String block_name) {
-		DGKeepTranLogBean dgKeepTranLogBean = new DGKeepTranLogBean().setDg_symbol(symbol).setToken_address(to_address).setTo_address(to_address).setAmount(num);
-
-		DGKeepTranLogBean last = dao.select(new DGKeepTranLogBean().setDg_symbol(symbol));
-		BigDecimal last_big = BigDecimal.ZERO;
-		if (last != null) {
-			last_big = last.getNow_out_cert_token_num();
-		}
-		DGSymbolConfBean select = dao.select(new DGSymbolConfBean().setContract_address(token).setBlock_name(block_name));
-		dgKeepTranLogBean.setToken_name(select.getSymbol());
-		dgKeepTranLogBean.setLast_out_cert_token_num(last_big);
-		dgKeepTranLogBean.setNow_out_cert_token_num(last_big.add(num));
-		dgKeepTranLogBean.setLog_type(DGKeepTranLogBean.log_type_0);
-		dgKeepTranLogBean.setLog_status(DGKeepTranLogBean.log_status_0);
-		dgKeepTranLogBean.setBlock(block_name);
-		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
-
-		add(dgKeepTranLogBean);
-	}
-
-	void add(DGKeepTranLogBean logBean) {
+	public void add(DGKeepBean dgKeepBean) {
 		synchronized (this) {
-			linkedList.add(logBean);
+			linkedList.add(dgKeepBean);
 			this.notifyAll();
 		}
 	}
