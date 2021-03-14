@@ -80,10 +80,9 @@ public class Symbol implements Mugui {
 			
 			DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol());
 			DGKeepBean select2 = dao.select(dgKeepTranLogBean);
-			if (select2 != null) {
+			if (select2 != null&&select2.getNow_out_cert_token_num()!=null) {
 				jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 			}else {
-
 				jsonObject.put("now_out_cert_token_num", "0");
 			}
 			array.add(jsonObject);
@@ -133,8 +132,10 @@ public class Symbol implements Mugui {
 		}
 		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol());
 		DGKeepBean select2 = dao.select(dgKeepTranLogBean);
-		if (select2 != null) {
+		if (select2 != null&&select2.getNow_out_cert_token_num()!=null) {
 			jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
+		}else {
+			jsonObject.put("now_out_cert_token_num", "0");
 		}
 		return Message.ok(jsonObject);
 	}

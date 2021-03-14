@@ -88,6 +88,9 @@ public class DGCertTask extends TaskImpl {
 				return;
 			}
 			List<BlockTranBean> selectList = dao.selectList(BlockTranBean.class, Select.q(new BlockTranBean()).where(Where.q().gt("tran_id", value)));
+			if(selectList.isEmpty()) {
+				return;
+			}
 			for (BlockTranBean blockChainBean : selectList) {
 				sysConfApi.setValue("dg_cert_handle_index", blockChainBean.getTran_id().toString());
 
