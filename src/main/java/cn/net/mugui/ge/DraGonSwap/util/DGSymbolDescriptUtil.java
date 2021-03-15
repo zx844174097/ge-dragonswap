@@ -13,7 +13,6 @@ import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 @Component
 public class DGSymbolDescriptUtil {
 
-
 	@Autowired
 	private DGDao dgDao;
 
@@ -29,6 +28,7 @@ public class DGSymbolDescriptUtil {
 			dgDao.updata(symbol_des);
 		}
 	}
+
 
 	/**
 	 * 入金基本币种

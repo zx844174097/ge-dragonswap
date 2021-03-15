@@ -1,6 +1,7 @@
 package cn.net.mugui.ge.DraGonSwap.app;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +21,7 @@ import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
+import cn.net.mugui.ge.DraGonSwap.bean.DGCertQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
@@ -135,10 +137,16 @@ public class Symbol implements Mugui {
 		}
 		JSONObject jsonObject = swapBean.symbol.get();
 		jsonObject.putAll(swapBean.symbol_des.get());
-		DGQuotes select = dao.select(new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4));
-		if (select != null) {
-			jsonObject.putAll(select.get());
+		DGQuotes setQ_type = new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4);
+//		DGQuotes select = dao.select(new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4));
+		List<DGQuotes> selectList = dao.selectList(DGQuotes.class, Select.q(setQ_type).where(Where.q(setQ_type).orderByDESCKeyId(setQ_type).limit(1)));
+		if (!selectList.isEmpty()) {
+			jsonObject.putAll(selectList.get(0).toJson());
+//			if(selectList.size()==2) {
+//				selectList.get
+//			}
 		}
+	
 		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7);
 		DGKeepBean select2 = dao.selectDESC(dgKeepTranLogBean);
 		if (select2 != null && select2.getNow_out_cert_token_num() != null) {
@@ -146,6 +154,17 @@ public class Symbol implements Mugui {
 		} else {
 			jsonObject.put("now_out_cert_token_num", "0");
 		}
+		DGCertQuotes selectDESC = dao.selectDESC(new DGCertQuotes().setMarket(dgSymbolBean.getSymbol()).setType(2));
+		if (selectDESC != null) {
+			jsonObject.put("token_scale", selectDESC.getScale().stripTrailingZeros().toPlainString());
+			jsonObject.put("token_count", selectDESC.getCount());
+			jsonObject.put("end_token_num", selectDESC.getEnd_token_num().stripTrailingZeros().toPlainString());
+		} else {
+			jsonObject.put("token_scale", "0");
+			jsonObject.put("token_count", "0");
+			jsonObject.put("end_token_num", "0");
+		}
+
 		return Message.ok(jsonObject);
 	}
 
@@ -158,6 +177,27 @@ public class Symbol implements Mugui {
 	public Message kLine(NetBag bag) {
 		DGQuotes newBean = DGQuotes.newBean(DGQuotes.class, bag.getData());
 		if (StringUtils.isBlank(newBean.getQ_market())) {
+			return Message.error("参数错误");
+		}
+		PageUtil.offsetPage(bag);
+		Integer quotes_id = newBean.getQuotes_id();
+		if (quotes_id != null) {
+			newBean.setQuotes_id(null);
+			Select where = Select.q(newBean).where(Where.q(newBean).ge("quotes_id", quotes_id));
+			return Message.ok(dao.selectArray(DGQuotes.class, where));
+		}
+		return Message.ok(dao.selectArrayDESC(newBean));
+	}
+
+	/**
+	 * 流动性K线图
+	 * 
+	 * @param bag
+	 * @return
+	 */
+	public Message kCertLine(NetBag bag) {
+		DGCertQuotes newBean = DGCertQuotes.newBean(DGCertQuotes.class, bag.getData());
+		if (StringUtils.isBlank(newBean.getMarket())) {
 			return Message.error("参数错误");
 		}
 		PageUtil.offsetPage(bag);

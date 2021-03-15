@@ -14,9 +14,11 @@ import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.sql.SqlServer;
 import com.mugui.util.Other;
 
+import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
+import cn.net.mugui.ge.DraGonSwap.bean.SystemInFeeBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolConfUtil;
@@ -40,6 +42,7 @@ public class DGTransferMatchTask extends TaskImpl {
 	@Override
 	public void init() {
 		super.init();
+		dao.createTable(SystemInFeeBean.class);
 		List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_4));
 		match_list.addAll(selectList);
 	}
@@ -70,8 +73,8 @@ public class DGTransferMatchTask extends TaskImpl {
 	private void handle() {
 		long currentTimeMillis = System.currentTimeMillis();
 		Iterator<DGTranLogBean> iterator = match_list.iterator();
-		
-		while(iterator.hasNext()) {
+
+		while (iterator.hasNext()) {
 			DGTranLogBean bean = iterator.next();
 			if (bean.getTran_log_create_time().getTime() + bean.getTo_limit_time() * 60 * 1000 < currentTimeMillis) {
 				rollback(bean);
@@ -80,7 +83,7 @@ public class DGTransferMatchTask extends TaskImpl {
 			}
 			try {
 				dao.getSqlServer().setAutoCommit(false);
-				handle(bean,iterator);
+				handle(bean, iterator);
 				dao.getSqlServer().commit();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -91,9 +94,9 @@ public class DGTransferMatchTask extends TaskImpl {
 					e1.printStackTrace();
 				}
 			}
-		
+
 		}
-		
+
 		addNewLog();
 	}
 
@@ -115,11 +118,13 @@ public class DGTransferMatchTask extends TaskImpl {
 	@Autowired
 	private KTranLineTask kTranLineTask;
 
+	private BigDecimal system_fee_scale = new BigDecimal("0.5");
+
 	private void handle(DGTranLogBean bean, Iterator<DGTranLogBean> iterator) throws SQLException, Exception {
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
 		BigDecimal bc_amount = bean.getFrom_num();
 		BigDecimal fee_num = bean.getFee_num();
-		bc_amount=bc_amount.subtract(fee_num); 
+		bc_amount = bc_amount.subtract(fee_num);
 		String[] split = bean.getDg_symbol().split("[/]");
 		if (split[0].equals(bean.getFrom_token_name())) {// 基本币种
 
@@ -127,7 +132,12 @@ public class DGTransferMatchTask extends TaskImpl {
 
 			boolean bol = dgSymbolDescriptUtil.reckonInBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 			if (bol) {
-				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean,fee_num);
+
+				BigDecimal multiply = fee_num.multiply(system_fee_scale);
+
+				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfBean);
+
+				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, multiply);
 				bean.setTo_num(inBase);
 				bean.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
@@ -140,7 +150,11 @@ public class DGTransferMatchTask extends TaskImpl {
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[0]);
 			boolean bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 			if (bol) {
-				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean,fee_num);
+
+				BigDecimal multiply = fee_num.multiply(system_fee_scale);
+
+				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfBean);
+				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, multiply);
 				bean.setTo_num(inQuote);
 				bean.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
@@ -150,6 +164,16 @@ public class DGTransferMatchTask extends TaskImpl {
 				iterator.remove();
 			}
 		}
+	}
+
+	// 系统手续费收入
+	private void saveSystem_fee_scale(BigDecimal multiply, DGSymbolBean symbol, String string, DGSymbolConfBean dgSymbolConfBean) {
+		SystemInFeeBean bean = new SystemInFeeBean();
+		bean.setFee(multiply).setSymbol(symbol.getSymbol());
+		bean.setName(dgSymbolConfBean.getSymbol());
+		bean.setBlock(dgSymbolConfBean.getBlock_name()).setContract_address(dgSymbolConfBean.getContract_address());
+		bean.setUser_address(string);
+		bean = dao.save(bean);
 	}
 
 	private void addNewLog() {

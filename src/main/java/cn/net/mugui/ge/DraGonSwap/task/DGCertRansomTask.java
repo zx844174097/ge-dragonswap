@@ -80,9 +80,13 @@ public class DGCertRansomTask {
 
 		descriptUtil.updateTotal(swapBean, base.negate(), quote.negate());
 		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
+		kCertLineTask.add(dgKeepTranLogBean);
 		outTask.add(dgKeepTranLogBean);
 		return true;
 	}
+	
+	@Autowired
+	private KCertLineTask kCertLineTask;
 	
 	@Autowired
 	private DGCertTokenOutTask outTask;

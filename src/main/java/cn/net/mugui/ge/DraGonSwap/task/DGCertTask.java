@@ -235,11 +235,16 @@ public class DGCertTask extends TaskImpl {
 			dao.updata(dgKeepBean);
 			// 更新持有总量
 			dgsymbolDes.updateTotal(swapBean, dgKeepBean.getBase_num(), dgKeepBean.getQuotes_num());
+			kCertLineTask.add(dgKeepBean);
 			// 转出持有证明token
 			dgCertTokenOutTask.add(dgKeepBean);
 
 		}
 	}
+	
+	@Autowired
+	private KCertLineTask kCertLineTask;
+	
 
 	@Autowired
 	DGSymbolConfUtil confUtil;

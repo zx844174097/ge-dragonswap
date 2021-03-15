@@ -21,7 +21,7 @@ import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 
 /**
- * k线图
+ * 交易k线图
  * 
  * @author Administrator
  *
