@@ -33,6 +33,7 @@ import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DGPriAddressCache;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
+import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.util.RedisUtil;
 
 @Authority(true)
@@ -58,7 +59,11 @@ public class Symbol implements Mugui {
 
 	@Autowired
 	private DGDao dao;
-
+	
+	
+	@Autowired
+	private DGConf conf;
+	
 	/**
 	 * 交易对列表
 	 * 
@@ -67,7 +72,10 @@ public class Symbol implements Mugui {
 	 */
 	public Message list(NetBag bag) {
 		JSONArray array = new JSONArray();
-
+		String usdt_quotes_cert_limit = conf.getValue("USDT_cert_limit");
+		if(StringUtils.isBlank(usdt_quotes_cert_limit)) {
+			conf.save("USDT_cert_limit", usdt_quotes_cert_limit="100", "usdt流动性入金限制");
+		}
 		for (DGSymbolBean dgSymbolBean : dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
 			JSONObject jsonObject = dgSymbolBean.get();
 
@@ -76,7 +84,7 @@ public class Symbol implements Mugui {
 			jsonObject.put("base", select);
 			select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
 			jsonObject.put("quotes", select);
-
+			jsonObject.put("USDT_cert_limit", usdt_quotes_cert_limit);
 			SwapBean swapBean = manager.get(dgSymbolBean.getSymbol());
 			jsonObject.putAll(swapBean.symbol_des.get());
 			jsonObject.put("token_address", swapBean.create.getToken_address());
@@ -136,6 +144,8 @@ public class Symbol implements Mugui {
 			return Message.error("参数错误");
 		}
 		JSONObject jsonObject = swapBean.symbol.get();
+		String token_address = swapBean.create.getToken_address();
+		jsonObject.put("token_address", token_address);
 		jsonObject.putAll(swapBean.symbol_des.get());
 		DGQuotes setQ_type = new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4);
 //		DGQuotes select = dao.select(new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4));
@@ -146,7 +156,7 @@ public class Symbol implements Mugui {
 //				selectList.get
 //			}
 		}
-	
+
 		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7);
 		DGKeepBean select2 = dao.selectDESC(dgKeepTranLogBean);
 		if (select2 != null && select2.getNow_out_cert_token_num() != null) {
