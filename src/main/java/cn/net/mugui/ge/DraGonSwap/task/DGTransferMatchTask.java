@@ -135,7 +135,7 @@ public class DGTransferMatchTask extends TaskImpl {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale);
 
-				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfBean);
+				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[0]));
 
 				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, multiply);
 				bean.setTo_num(inBase);
@@ -153,7 +153,7 @@ public class DGTransferMatchTask extends TaskImpl {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale);
 
-				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfBean);
+				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[1]));
 				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, multiply);
 				bean.setTo_num(inQuote);
 				bean.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));

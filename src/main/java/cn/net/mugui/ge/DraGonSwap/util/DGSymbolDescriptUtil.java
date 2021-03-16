@@ -112,10 +112,10 @@ public class DGSymbolDescriptUtil {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal add = symbol_des.getQuote_num().add(bc_amount);
 
-			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
-			BigDecimal subtract = symbol_des.getBase_num().subtract(quote_num);
+			BigDecimal base_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal subtract = symbol_des.getBase_num().subtract(base_num);
 			symbol_des.setQuote_num(add.add(fee_num));
-			symbol_des.setBase_num(quote_num);
+			symbol_des.setBase_num(base_num);
 			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()));
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));

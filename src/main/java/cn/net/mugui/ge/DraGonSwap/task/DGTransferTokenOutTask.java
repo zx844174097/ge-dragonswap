@@ -30,8 +30,8 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	@Override
 	public void init() {
 		super.init();
-		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_1)));
-		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_2)));
+//		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_1)));
+//		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_2)));
 	}
 
 	@Override
