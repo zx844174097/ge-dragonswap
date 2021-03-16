@@ -2,9 +2,9 @@ package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,14 +37,16 @@ public class DGTransferMatchTask extends TaskImpl {
 	@Autowired
 	private DGDao dao;
 
-	ConcurrentLinkedDeque<DGTranLogBean> match_list = new ConcurrentLinkedDeque<>();
+	LinkedHashMap<Integer, DGTranLogBean> match_list = new LinkedHashMap<>();
 
 	@Override
 	public void init() {
 		super.init();
 		dao.createTable(SystemInFeeBean.class);
 		List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_4));
-		match_list.addAll(selectList);
+		for (DGTranLogBean tranLogBean : selectList) {
+			match_list.put(tranLogBean.getTran_log_id(), tranLogBean);
+		}
 	}
 
 	@Override
@@ -72,9 +74,9 @@ public class DGTransferMatchTask extends TaskImpl {
 
 	private void handle() {
 		long currentTimeMillis = System.currentTimeMillis();
-		Iterator<DGTranLogBean> iterator = match_list.iterator();
-		while (iterator.hasNext()) {
-			DGTranLogBean bean = iterator.next();
+		LinkedList<Integer> linkedList = new LinkedList<>(match_list.keySet());
+		for (Integer key : linkedList) {
+			DGTranLogBean bean = match_list.get(key);
 			if (bean.getTran_log_create_time().getTime() + bean.getTo_limit_time() * 60 * 1000 < currentTimeMillis) {
 				try {
 					dao.getSqlServer().setAutoCommit(false);
@@ -89,16 +91,15 @@ public class DGTransferMatchTask extends TaskImpl {
 					}
 				} finally {
 					SqlServer.reback();
+					match_list.remove(key);
 				}
-				iterator.remove();
 			}
 		}
-		iterator = match_list.iterator();
-		while (iterator.hasNext()) {
+		linkedList = new LinkedList<>(match_list.keySet());
+		for (Integer key : linkedList) {
 			try {
-				DGTranLogBean bean = iterator.next();
 				dao.getSqlServer().setAutoCommit(false);
-				handle(bean, iterator);
+				handle(match_list.get(key));
 				dao.getSqlServer().commit();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -140,11 +141,12 @@ public class DGTransferMatchTask extends TaskImpl {
 
 	private BigDecimal system_fee_scale = new BigDecimal("0.5");
 
-	private void handle(DGTranLogBean bean, Iterator<DGTranLogBean> iterator) throws SQLException, Exception {
+	private void handle(DGTranLogBean bean) throws SQLException, Exception {
 		if (bean.getLog_type() != DGTranLogBean.log_type_0) {
-			iterator.remove();
+			match_list.remove(bean.getTran_log_id());
 			return;
 		}
+		System.out.println("handle 处理-》"+bean);
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
 		BigDecimal bc_amount = bean.getFrom_num();
 		BigDecimal fee_num = bean.getFee_num();
@@ -168,14 +170,13 @@ public class DGTransferMatchTask extends TaskImpl {
 				dao.getSqlServer().commit();
 				transfer.add(bean);
 				kTranLineTask.add(bean);
-				iterator.remove();
+				match_list.remove(bean.getTran_log_id());
 			}
 		} else {// 计价币种
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[0]);
 
 			boolean bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 
-			System.out.println(bean + "验算：" + bol + "->" + bc_amount + dgSymbolConfBean.getPrecision() + bean.getTo_limit_num());
 			if (bol) {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale);
@@ -188,7 +189,7 @@ public class DGTransferMatchTask extends TaskImpl {
 				dao.getSqlServer().commit();
 				transfer.add(bean);
 				kTranLineTask.add(bean);
-				iterator.remove();
+				match_list.remove(bean.getTran_log_id());
 			}
 		}
 	}
@@ -206,9 +207,12 @@ public class DGTransferMatchTask extends TaskImpl {
 	private void addNewLog() {
 		List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_0));
 		for (DGTranLogBean bean : selectList) {
+			if (match_list.get(bean.getTran_log_id()) != null) {
+				continue;
+			}
 			bean.setLog_status(DGTranLogBean.log_status_4);
 			dao.updata(bean);
-			match_list.add(bean);
+			match_list.put(bean.getTran_log_id(), bean);
 		}
 	}
 

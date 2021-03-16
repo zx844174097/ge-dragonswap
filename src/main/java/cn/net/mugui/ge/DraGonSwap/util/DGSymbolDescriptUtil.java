@@ -25,6 +25,7 @@ public class DGSymbolDescriptUtil {
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
+			System.out.println("updateTotal->"+symbol_des);
 			dgDao.updata(symbol_des);
 		}
 	}
@@ -51,6 +52,7 @@ public class DGSymbolDescriptUtil {
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
+			System.out.println("inBase->"+symbol_des);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}
@@ -120,6 +122,7 @@ public class DGSymbolDescriptUtil {
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
+			System.out.println("inQuote->"+symbol_des);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}
