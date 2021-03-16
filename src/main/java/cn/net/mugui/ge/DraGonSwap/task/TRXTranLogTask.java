@@ -96,7 +96,8 @@ public class TRXTranLogTask extends TaskImpl {
 				List<BlockTranBean> handle = TRXTranLogTask.this.handle(tran);
 				if (!handle.isEmpty()) {
 					for (BlockTranBean tranBean : handle) {
-						dao.save(tranBean);
+						if (dao.select(new BlockTranBean().setHash(tranBean.getHash())) == null)
+							dao.save(tranBean);
 					}
 				}
 			}

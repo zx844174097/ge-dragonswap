@@ -106,6 +106,11 @@ public class DGTransferMatchTask extends TaskImpl {
 	 * @param bean
 	 */
 	private void rollback(DGTranLogBean bean) {
+		
+		if(dao.select(new DGTranLogBean().setTran_log_id(bean.getTran_log_id())).getLog_status()!=4) {
+			return ;
+		}
+		
 		bean.setLog_type(DGTranLogBean.log_type_1);
 		bean.setTo_address(bean.getFrom_address());
 		bean.setTo_block(bean.getFrom_block());
