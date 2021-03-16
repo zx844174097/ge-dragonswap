@@ -142,6 +142,7 @@ public class DGTransferMatchTask extends TaskImpl {
 
 	private void handle(DGTranLogBean bean, Iterator<DGTranLogBean> iterator) throws SQLException, Exception {
 		if (bean.getLog_type() != DGTranLogBean.log_type_0) {
+			iterator.remove();
 			return;
 		}
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
