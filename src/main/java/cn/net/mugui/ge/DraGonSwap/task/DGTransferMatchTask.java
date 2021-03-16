@@ -148,7 +148,10 @@ public class DGTransferMatchTask extends TaskImpl {
 			}
 		} else {// 计价币种
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[0]);
+
 			boolean bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
+
+			System.out.println(bean+"验算："+bol+"->"+bc_amount+dgSymbolConfBean.getPrecision()+bean.getTo_limit_num());
 			if (bol) {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale);
