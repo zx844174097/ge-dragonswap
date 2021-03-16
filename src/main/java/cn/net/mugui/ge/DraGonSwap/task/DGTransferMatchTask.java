@@ -73,15 +73,30 @@ public class DGTransferMatchTask extends TaskImpl {
 	private void handle() {
 		long currentTimeMillis = System.currentTimeMillis();
 		Iterator<DGTranLogBean> iterator = match_list.iterator();
-
 		while (iterator.hasNext()) {
 			DGTranLogBean bean = iterator.next();
 			if (bean.getTran_log_create_time().getTime() + bean.getTo_limit_time() * 60 * 1000 < currentTimeMillis) {
-				rollback(bean);
+				try {
+					dao.getSqlServer().setAutoCommit(false);
+					rollback(bean);
+					dao.getSqlServer().commit();
+				} catch (Exception e) {
+					e.printStackTrace();
+					try {
+						dao.getSqlServer().rollback();
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				} finally {
+					SqlServer.reback();
+				}
 				iterator.remove();
-				continue;
 			}
+		}
+		iterator = match_list.iterator();
+		while (iterator.hasNext()) {
 			try {
+				DGTranLogBean bean = iterator.next();
 				dao.getSqlServer().setAutoCommit(false);
 				handle(bean, iterator);
 				dao.getSqlServer().commit();
@@ -89,15 +104,15 @@ public class DGTransferMatchTask extends TaskImpl {
 				e.printStackTrace();
 				try {
 					dao.getSqlServer().rollback();
-					SqlServer.reback();
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
+			} finally {
+				SqlServer.reback();
 			}
-
 		}
-
 		addNewLog();
+
 	}
 
 	/**
@@ -106,11 +121,11 @@ public class DGTransferMatchTask extends TaskImpl {
 	 * @param bean
 	 */
 	private void rollback(DGTranLogBean bean) {
-		
-		if(dao.select(new DGTranLogBean().setTran_log_id(bean.getTran_log_id())).getLog_status()!=4) {
-			return ;
+
+		if (dao.select(new DGTranLogBean().setTran_log_id(bean.getTran_log_id())).getLog_status() != 4) {
+			return;
 		}
-		
+
 		bean.setLog_type(DGTranLogBean.log_type_1);
 		bean.setTo_address(bean.getFrom_address());
 		bean.setTo_block(bean.getFrom_block());
@@ -126,6 +141,9 @@ public class DGTransferMatchTask extends TaskImpl {
 	private BigDecimal system_fee_scale = new BigDecimal("0.5");
 
 	private void handle(DGTranLogBean bean, Iterator<DGTranLogBean> iterator) throws SQLException, Exception {
+		if (bean.getLog_type() != DGTranLogBean.log_type_0) {
+			return;
+		}
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
 		BigDecimal bc_amount = bean.getFrom_num();
 		BigDecimal fee_num = bean.getFee_num();
@@ -156,7 +174,7 @@ public class DGTransferMatchTask extends TaskImpl {
 
 			boolean bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 
-			System.out.println(bean+"验算："+bol+"->"+bc_amount+dgSymbolConfBean.getPrecision()+bean.getTo_limit_num());
+			System.out.println(bean + "验算：" + bol + "->" + bc_amount + dgSymbolConfBean.getPrecision() + bean.getTo_limit_num());
 			if (bol) {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale);
