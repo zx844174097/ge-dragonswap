@@ -1,7 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.admin;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -125,68 +124,68 @@ public class SymbolAdmin implements Mugui {
 	 * @param bag
 	 * @return
 	 */
-	@Transactional
-	public Message updateStatus(NetBag bag) {
-		DGSymbolBean input_dg = DGSymbolBean.newBean(DGSymbolBean.class, bag.getData());
-		if (input_dg.getDg_symbol_id() == null || input_dg.getSymbol_status() == null) {
-			return Message.error("参数错误");
-		}
-		DGSymbolBean dgSymbolBean = dao.select(new DGSymbolBean().setDg_symbol_id(input_dg.getDg_symbol_id()));
-		if (dgSymbolBean == null) {
-			return Message.error("参数错误");
-		}
-
-		switch (input_dg.getSymbol_status()) {
-		case DGSymbolBean.SYMBOL_STATUS_0:
-		case DGSymbolBean.SYMBOL_STATUS_2:
-		case DGSymbolBean.SYMBOL_STATUS_3:
-			// 下架或者删除操作
-			break;
-		case DGSymbolBean.SYMBOL_STATUS_1:// 上架操作
-			DGSymbolDescriptBean descriptBean = new DGSymbolDescriptBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
-			descriptBean = dao.select(descriptBean);
-			if (descriptBean == null) {
-				DGSymbolCreateBean createBean = new DGSymbolCreateBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
-				createBean = dao.select(createBean);
-				if (createBean.getToken_address() == null) {
-					createBean.setToken_address(input_dg.get().getString("token_address"));
-					BigDecimal bigDecimal = input_dg.get().getBigDecimal("token_total_num");
-					if (bigDecimal == null) {
-						createBean.setToken_total_num(new BigDecimal("10000000000"));
-					} else {
-						createBean.setToken_total_num(bigDecimal);
-					}
-					dao.updata(createBean);
-				}
-				descriptBean = new DGSymbolDescriptBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
-				descriptBean.setBase_num(BigDecimal.ZERO).setQuote_num(BigDecimal.ZERO).setSymbol_descript_update_time(new Date());
-				descriptBean.setTotal_num(BigDecimal.ZERO);
-
-				// DGSymbolConfBean select = dao.select(new
-				// DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
-
-				descriptBean.setScale(BigDecimal.ZERO);
-				// select = dao.select(new
-				// DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
-
-				descriptBean.setReverse_scale(BigDecimal.ZERO);
-				descriptBean = dao.save(descriptBean);
-				bag.setRet_data(descriptBean.getDg_symbol_id());
-				dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
-				dao.updata(dgSymbolBean);
-				manager.add(dgSymbolBean.getSymbol());
-				return Message.ok("更新成功");
-			}
-			bag.setRet_data(descriptBean.getDg_symbol_id());
-			dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
-			dao.updata(dgSymbolBean);
-			return Message.ok("已上架，无法上架");
-
-		default:
-			return Message.error("参数错误");
-		}
-		return Message.ok("更新成功");
-	}
+//	@Transactional
+//	public Message updateStatus(NetBag bag) {
+//		DGSymbolBean input_dg = DGSymbolBean.newBean(DGSymbolBean.class, bag.getData());
+//		if (input_dg.getDg_symbol_id() == null || input_dg.getSymbol_status() == null) {
+//			return Message.error("参数错误");
+//		}
+//		DGSymbolBean dgSymbolBean = dao.select(new DGSymbolBean().setDg_symbol_id(input_dg.getDg_symbol_id()));
+//		if (dgSymbolBean == null) {
+//			return Message.error("参数错误");
+//		}
+//
+//		switch (input_dg.getSymbol_status()) {
+//		case DGSymbolBean.SYMBOL_STATUS_0:
+//		case DGSymbolBean.SYMBOL_STATUS_2:
+//		case DGSymbolBean.SYMBOL_STATUS_3:
+//			// 下架或者删除操作
+//			break;
+//		case DGSymbolBean.SYMBOL_STATUS_1:// 上架操作
+//			DGSymbolDescriptBean descriptBean = new DGSymbolDescriptBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
+//			descriptBean = dao.select(descriptBean);
+//			if (descriptBean == null) {
+//				DGSymbolCreateBean createBean = new DGSymbolCreateBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
+//				createBean = dao.select(createBean);
+//				if (createBean.getToken_address() == null) {
+//					createBean.setToken_address(input_dg.get().getString("token_address"));
+//					BigDecimal bigDecimal = input_dg.get().getBigDecimal("token_total_num");
+//					if (bigDecimal == null) {
+//						createBean.setToken_total_num(new BigDecimal("10000000000"));
+//					} else {
+//						createBean.setToken_total_num(bigDecimal);
+//					}
+//					dao.updata(createBean);
+//				}
+//				descriptBean = new DGSymbolDescriptBean().setDg_symbol_id(dgSymbolBean.getDg_symbol_id());
+//				descriptBean.setBase_num(BigDecimal.ZERO).setQuote_num(BigDecimal.ZERO).setSymbol_descript_update_time(new Date());
+//				descriptBean.setTotal_num(BigDecimal.ZERO);
+//
+//				// DGSymbolConfBean select = dao.select(new
+//				// DGSymbolConfBean().setSymbol(dgSymbolBean.getQuote_currency()));
+//
+//				descriptBean.setScale(BigDecimal.ZERO);
+//				// select = dao.select(new
+//				// DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
+//
+//				descriptBean.setReverse_scale(BigDecimal.ZERO);
+//				descriptBean = dao.save(descriptBean);
+//				bag.setRet_data(descriptBean.getDg_symbol_id());
+//				dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
+//				dao.updata(dgSymbolBean);
+//				manager.add(dgSymbolBean.getSymbol());
+//				return Message.ok("更新成功");
+//			}
+//			bag.setRet_data(descriptBean.getDg_symbol_id());
+//			dgSymbolBean.setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1);
+//			dao.updata(dgSymbolBean);
+//			return Message.ok("已上架，无法上架");
+//
+//		default:
+//			return Message.error("参数错误");
+//		}
+//		return Message.ok("更新成功");
+//	}
 	@Autowired
 	private DSymbolManager manager;
 	/**

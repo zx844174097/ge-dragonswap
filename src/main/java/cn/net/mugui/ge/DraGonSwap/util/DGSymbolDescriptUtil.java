@@ -21,15 +21,14 @@ public class DGSymbolDescriptUtil {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			symbol_des.setBase_num(symbol_des.getBase_num().add(base));
 			symbol_des.setQuote_num(symbol_des.getQuote_num().add(quotes));
-			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()));
+			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
-			System.out.println("updateTotal->"+symbol_des);
+			System.out.println("updateTotal->" + symbol_des);
 			dgDao.updata(symbol_des);
 		}
 	}
-
 
 	/**
 	 * 入金基本币种
@@ -48,11 +47,11 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			symbol_des.setBase_num(add.add(fee_num));
 			symbol_des.setQuote_num(quote_num);
-			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()));
+			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(18, BigDecimal.ROUND_DOWN));
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
-			System.out.println("inBase->"+symbol_des);
+			System.out.println("inBase->" + symbol_des);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}
@@ -118,11 +117,12 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = symbol_des.getBase_num().subtract(base_num);
 			symbol_des.setQuote_num(add.add(fee_num));
 			symbol_des.setBase_num(base_num);
-			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()));
+			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(18, BigDecimal.ROUND_DOWN));
+
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
-			System.out.println("inQuote->"+symbol_des);
+			System.out.println("inQuote->" + symbol_des);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}

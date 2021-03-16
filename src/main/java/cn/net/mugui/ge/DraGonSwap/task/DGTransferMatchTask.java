@@ -146,8 +146,8 @@ public class DGTransferMatchTask extends TaskImpl {
 			match_list.remove(bean.getTran_log_id());
 			return;
 		}
-		System.out.println("handle 处理-》"+bean);
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
+		System.out.println("handle 处理-》"+bean);
 		BigDecimal bc_amount = bean.getFrom_num();
 		BigDecimal fee_num = bean.getFee_num();
 		bc_amount = bc_amount.subtract(fee_num);
