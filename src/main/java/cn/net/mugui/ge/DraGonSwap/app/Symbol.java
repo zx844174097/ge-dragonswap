@@ -294,7 +294,7 @@ public class Symbol implements Mugui {
 			if (newBean.getLimit_min().compareTo(BigDecimal.ZERO) <= 0) {
 				return Message.error("参数错误");
 			}
-			newBean.setLimit_min(newBean.getLimit_min().setScale(2, BigDecimal.ROUND_DOWN));
+			newBean.setLimit_min(newBean.getLimit_min().setScale(6, BigDecimal.ROUND_DOWN));
 			redis.addRedisByTime("wait_" + hash, newBean.toString(), 3, TimeUnit.DAYS);
 			break;
 		case 1:
