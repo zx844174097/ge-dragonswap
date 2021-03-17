@@ -1,7 +1,5 @@
 package cn.net.mugui.ge.DraGonSwap.cache;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,24 +11,15 @@ import com.mugui.spring.net.bean.NetBag;
 import com.mugui.spring.net.cache.CacheModel;
 import com.mugui.util.Other;
 
+import cn.hutool.cache.impl.TimedCache;
 import cn.net.mugui.ge.util.SessionImpl;
 
-@Cache(value = "symbol.method.kLine")
+@Cache(value = { "symbol.method.kLine", "symbol.method.kCertLine" })
 @Component
 public class KlineCache implements CacheModel {
 
 	private static long GlobalCache_time = 5000;
-	private static ConcurrentHashMap<String, CacheBean> map = new ConcurrentHashMap<>();
-
-	public class CacheBean {
-		public CacheBean(Object data) {
-			body = data;
-			time = System.currentTimeMillis();
-		}
-
-		private long time;
-		private Object body;
-	}
+	private static TimedCache<String, Message> map = new TimedCache<String, Message>(GlobalCache_time);
 
 	@Override
 	public NetBag load(NetBag bag) {
@@ -40,13 +29,11 @@ public class KlineCache implements CacheModel {
 		}
 		str = str.replaceAll("\\s*", "");
 		String string = (bag.getFunc() + Other.MD5(str));
-		CacheBean bean = null;
-		if ((bean = map.get(string)) != null) {
-			if (System.currentTimeMillis() - bean.time < GlobalCache_time) {
-				bag.setData(bean.body);
-				return null;
-			}
-			map.remove(string);
+		Message bean = null;
+
+		if ((bean = map.get(string, false)) != null) {
+			bag.setData(bean);
+			return null;
 		}
 		SessionImpl.getSession(bag).setAttribute("method:" + bag.getFunc(), string);
 		return bag;
@@ -59,9 +46,9 @@ public class KlineCache implements CacheModel {
 			if (session != null) {
 				String string = (String) session.getAttribute("method:" + bag.getFunc());
 				if (StringUtils.isNotBlank(string)) {
-					map.put(string, new CacheBean(message));
+					map.put(string, message);
+					session.removeAttribute("method:" + bag.getFunc());
 				}
-				session.removeAttribute("method:" + bag.getFunc());
 			}
 		}
 	}

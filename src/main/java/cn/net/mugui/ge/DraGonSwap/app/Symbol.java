@@ -59,11 +59,10 @@ public class Symbol implements Mugui {
 
 	@Autowired
 	private DGDao dao;
-	
-	
+
 	@Autowired
 	private DGConf conf;
-	
+
 	/**
 	 * 交易对列表
 	 * 
@@ -73,8 +72,8 @@ public class Symbol implements Mugui {
 	public Message list(NetBag bag) {
 		JSONArray array = new JSONArray();
 		String usdt_quotes_cert_limit = conf.getValue("USDT_cert_limit");
-		if(StringUtils.isBlank(usdt_quotes_cert_limit)) {
-			conf.save("USDT_cert_limit", usdt_quotes_cert_limit="100", "usdt流动性入金限制");
+		if (StringUtils.isBlank(usdt_quotes_cert_limit)) {
+			conf.save("USDT_cert_limit", usdt_quotes_cert_limit = "100", "usdt流动性入金限制");
 		}
 		for (DGSymbolBean dgSymbolBean : dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
 			JSONObject jsonObject = dgSymbolBean.get();
@@ -178,6 +177,10 @@ public class Symbol implements Mugui {
 		return Message.ok(jsonObject);
 	}
 
+//	TimedCache<String, Message> newTimedCache = new TimedCache<String, Message>(5000);
+//	
+//	@Autowired
+//	private  LockUtil lockUtil;
 	/**
 	 * K线图
 	 * 
@@ -185,10 +188,17 @@ public class Symbol implements Mugui {
 	 * @return
 	 */
 	public Message kLine(NetBag bag) {
+
 		DGQuotes newBean = DGQuotes.newBean(DGQuotes.class, bag.getData());
 		if (StringUtils.isBlank(newBean.getQ_market())) {
 			return Message.error("参数错误");
 		}
+//		String key=bag.getFunc() + Other.MD5(bag.getData().toString());
+//		Message message = newTimedCache.get(key, false);
+//		if(key!=null) {
+//			return message;
+//		}
+//		lockUtil.lock(key);
 		PageUtil.offsetPage(bag);
 		Integer quotes_id = newBean.getQuotes_id();
 		if (quotes_id != null) {

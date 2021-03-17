@@ -19,9 +19,10 @@ public class DGSymbolDescriptUtil {
 	public void updateTotal(SwapBean swapBean, BigDecimal base, BigDecimal quotes) {
 		synchronized (swapBean) {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
+			System.out.println("updateTotal 前->" + symbol_des+" " + base+" "+quotes);
 			symbol_des.setBase_num(symbol_des.getBase_num().add(base));
 			symbol_des.setQuote_num(symbol_des.getQuote_num().add(quotes));
-			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(18, BigDecimal.ROUND_DOWN));
+			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(32, BigDecimal.ROUND_DOWN).stripTrailingZeros());
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
@@ -42,16 +43,17 @@ public class DGSymbolDescriptUtil {
 	public BigDecimal inBase(BigDecimal bc_amount, int precision, SwapBean swapBean, BigDecimal fee_num) {
 		synchronized (swapBean) {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
+			System.out.println("inBase 前->" + symbol_des+" " + bc_amount+" "+fee_num);
 			BigDecimal add = symbol_des.getBase_num().add(bc_amount);
-			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_UP);
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			symbol_des.setBase_num(add.add(fee_num));
 			symbol_des.setQuote_num(quote_num);
-			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(18, BigDecimal.ROUND_DOWN));
+			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(32, BigDecimal.ROUND_DOWN).stripTrailingZeros());
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
-			System.out.println("inBase->" + symbol_des);
+			System.out.println("inBase 后->" + symbol_des+" "+subtract);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}
@@ -111,18 +113,19 @@ public class DGSymbolDescriptUtil {
 	public BigDecimal inQuote(BigDecimal bc_amount, Integer precision, SwapBean swapBean, BigDecimal fee_num) {
 		synchronized (swapBean) {
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
+			System.out.println("inQuote 前->" + symbol_des+" " + bc_amount+" "+fee_num);
 			BigDecimal add = symbol_des.getQuote_num().add(bc_amount);
 
-			BigDecimal base_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
+			BigDecimal base_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_UP);
 			BigDecimal subtract = symbol_des.getBase_num().subtract(base_num);
 			symbol_des.setQuote_num(add.add(fee_num));
 			symbol_des.setBase_num(base_num);
-			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(18, BigDecimal.ROUND_DOWN));
+			symbol_des.setTotal_num(symbol_des.getBase_num().multiply(symbol_des.getQuote_num()).setScale(32, BigDecimal.ROUND_DOWN).stripTrailingZeros());
 
 			symbol_des.setScale(symbol_des.getQuote_num().divide(symbol_des.getBase_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setReverse_scale(symbol_des.getBase_num().divide(symbol_des.getQuote_num(), 18, BigDecimal.ROUND_DOWN));
 			symbol_des.setSymbol_descript_update_time(new Date());
-			System.out.println("inQuote->" + symbol_des);
+			System.out.println("inQuote 后->" + symbol_des+" "+subtract);
 			dgDao.updata(symbol_des);
 			return subtract;
 		}

@@ -28,7 +28,7 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 	@Autowired
 	private DGDao dao;
 
-	ThreadPoolExecutor build = ThreadUtil.newExecutor(5, 5);
+	ThreadPoolExecutor build = ThreadUtil.newExecutor(1, 5);
 
 	@Override
 	public void run() {
@@ -43,6 +43,9 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 		long lastBlock = blockHandleApi.getLastBlock();
 		if (lastBlock > Integer.parseInt(value)) {
 			for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
+				if (build.getActiveCount() == build.getMaximumPoolSize()) {
+					return;
+				}
 				build.execute(new TempRunnable(i, blockHandleApi));
 				conf.setValue(getName() + "_tran_log_index", i + "");
 			}

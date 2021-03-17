@@ -47,6 +47,11 @@ public class DGCertRansomTask {
 			return false;
 		}
 		BigDecimal num = blockChainBean.getNum();
+
+		DGKeepBean lBean = dao.select(new DGKeepBean().setHash_3(blockChainBean.getHash()));
+		if (lBean != null) {
+			return true;
+		}
 		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbol.getSymbol()).setToken_3(select.getToken_address()).setUser_address(blockChainBean.getFrom()).setToken_num(num);
 		dgKeepTranLogBean.setKeep_type(DGKeepBean.keep_type_1);
 		dgKeepTranLogBean.setHash_3(blockChainBean.getHash());
@@ -55,11 +60,11 @@ public class DGCertRansomTask {
 		BigDecimal now_out_cert_token_num = last_dg_keep.getNow_out_cert_token_num();
 
 		BigDecimal divide = dgKeepTranLogBean.getToken_num().divide(now_out_cert_token_num, 32, BigDecimal.ROUND_DOWN);
-	
+
 		BigDecimal base = swapBean.symbol_des.getBase_num().multiply(divide);
 		{// 基本币种处理
 			DGSymbolConfBean dgSymbolConfBean = confUtil.get(dgSymbol.getBase_currency());
-			base = base.setScale(dgSymbolConfBean.getPrecision());
+			base = base.setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_DOWN);
 			dgKeepTranLogBean.setBlock_1(dgSymbolConfBean.getBlock_name());
 			dgKeepTranLogBean.setToken_1(dgSymbolConfBean.getContract_address());
 			dgKeepTranLogBean.setBase_num(base);
@@ -68,7 +73,7 @@ public class DGCertRansomTask {
 		BigDecimal quote = swapBean.symbol_des.getQuote_num().multiply(divide);
 		{// 计价币种处理
 			DGSymbolConfBean dgSymbolConfBean = confUtil.get(dgSymbol.getQuote_currency());
-			quote = quote.setScale(dgSymbolConfBean.getPrecision());
+			quote = quote.setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_DOWN);
 			dgKeepTranLogBean.setBlock_2(dgSymbolConfBean.getBlock_name());
 			dgKeepTranLogBean.setToken_2(dgSymbolConfBean.getContract_address());
 			dgKeepTranLogBean.setQuotes_num(quote);
@@ -76,18 +81,17 @@ public class DGCertRansomTask {
 
 		dgKeepTranLogBean.setLast_out_cert_token_num(now_out_cert_token_num);
 		dgKeepTranLogBean.setNow_out_cert_token_num(now_out_cert_token_num.subtract(dgKeepTranLogBean.getToken_num()));
-
-
+		dgKeepTranLogBean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
 		descriptUtil.updateTotal(swapBean, base.negate(), quote.negate());
 		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
 		kCertLineTask.add(dgKeepTranLogBean);
 		outTask.add(dgKeepTranLogBean);
 		return true;
 	}
-	
+
 	@Autowired
 	private KCertLineTask kCertLineTask;
-	
+
 	@Autowired
 	private DGCertTokenOutTask outTask;
 
