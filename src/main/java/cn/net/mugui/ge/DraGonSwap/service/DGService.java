@@ -17,7 +17,7 @@ public class DGService implements DGServiceApi {
 
 	@Override
 	public JSONObject getSymbol(String symbol) {
-		DGQuotes select = dao.select(new DGQuotes().setQ_type(4).setQ_market(symbol));
+		DGQuotes select = dao.selectDESC(new DGQuotes().setQ_type(4).setQ_market(symbol));
 		DGTranLogBean selectDESC = dao.selectDESC(new DGTranLogBean().setLog_type(DGTranLogBean.log_type_0).setLog_status(DGTranLogBean.log_status_5));
 		if (select != null && selectDESC != null) {
 			select.get().put("scale", selectDESC.getScale().stripTrailingZeros().toPlainString());
