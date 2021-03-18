@@ -2,6 +2,7 @@ package cn.net.mugui.ge.DraGonSwap.cache;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mugui.spring.base.Cache;
@@ -11,6 +12,7 @@ import com.mugui.spring.net.cache.CacheModel;
 import com.mugui.util.Other;
 
 import cn.hutool.cache.impl.TimedCache;
+import cn.net.mugui.ge.DraGonSwap.util.LockUtil;
 import cn.net.mugui.ge.util.SessionImpl;
 
 @Cache(value = { "symbol.method.kLine", "symbol.method.kCertLine" })
@@ -24,13 +26,17 @@ public class KlineCache implements CacheModel {
 		return (bag.getFunc() + Other.MD5(bag.getData().toString()));
 	}
 
+	@Autowired
+	LockUtil lockUtil;
+
 	@Override
 	public NetBag load(NetBag bag) {
-		String string = getKey(bag);
+		String key = getKey(bag);
 		Message bean = null;
-
-		if ((bean = map.get(string, false)) != null) {
+		lockUtil.lock(key);
+		if ((bean = map.get(key, false)) != null) {
 			bag.setData(bean);
+			lockUtil.unlock(key);
 			return null;
 		}
 //		SessionImpl.getSession(bag).setAttribute("method:" + bag.getFunc(), string);
@@ -42,7 +48,9 @@ public class KlineCache implements CacheModel {
 		if (message.getType() == Message.SUCCESS) {
 			HttpSession session = SessionImpl.getSession(bag);
 			if (session != null) {
-				map.put(getKey(bag), message);
+				String key = getKey(bag);
+				map.put(key, message);
+				lockUtil.unlock(key);
 			}
 		}
 	}

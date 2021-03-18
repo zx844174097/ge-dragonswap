@@ -88,7 +88,7 @@ public class Symbol implements Mugui {
 			jsonObject.putAll(swapBean.symbol_des.get());
 			jsonObject.put("token_address", swapBean.create.getToken_address());
 
-			DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol());
+			DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7);
 			DGKeepBean select2 = dao.selectDESC(dgKeepTranLogBean);
 			if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 				jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
