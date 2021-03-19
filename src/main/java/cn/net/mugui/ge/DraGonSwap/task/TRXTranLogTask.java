@@ -92,10 +92,16 @@ public class TRXTranLogTask extends TaskImpl {
 				}
 				System.out.println(leftPop);
 				Object tran = blockHandleApi.getTran(Long.parseLong(leftPop));
+				long time = System.currentTimeMillis();
 				while (tran == null) {
 					tran = blockHandleApi.getTran(Long.parseLong(leftPop));
 					Other.sleep(1000);
+					if (System.currentTimeMillis() - time > 20000) {
+						break;
+					}
 				}
+				if (tran == null)
+					continue;
 				List<BlockTranBean> handle = TRXTranLogTask.this.handle(tran);
 				if (!handle.isEmpty()) {
 					for (BlockTranBean tranBean : handle) {
