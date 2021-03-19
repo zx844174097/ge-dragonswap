@@ -126,7 +126,7 @@ public class Symbol implements Mugui {
 		Integer count = dao.count(newBean);
 		return Message.ok(selectArrayDESC).setExtra(count + "");
 	}
-	
+
 	public Message certLog(NetBag bag) {
 
 		PageUtil.offsetPage(bag);
@@ -320,7 +320,12 @@ public class Symbol implements Mugui {
 			if (StringUtils.isBlank(newBean.getRemark())) {
 				return Message.error("参数错误");
 			}
-
+			if (redis.getRedis("wait_" + newBean.getHash()) != null) {
+				return Message.error("已广播交易");
+			}
+			if (redis.getRedis("wait_" + newBean.getRemark()) != null) {
+				return Message.error("已广播交易");
+			}
 			PushRemarkBean pushRemarkBean = new PushRemarkBean().setType(1);
 			pushRemarkBean.setHash(newBean.getRemark());
 			pushRemarkBean.setRemark(newBean.getHash());
