@@ -15,12 +15,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.spring.util.HTTPUtil;
+import com.mugui.util.Other;
 
 import cn.net.mugui.ge.block.tron.TRC20.Address;
 import cn.net.mugui.ge.block.tron.TRC20.ApiResult;
-import cn.net.mugui.ge.block.tron.TRC20.ContractEvent;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Credential;
+import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.TransferTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Trc20;
 import cn.net.mugui.ge.block.tron.TRC20.TronApi;
@@ -135,7 +136,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 	@Override
 	public Object getTran(long tran_index) {
 		try {
-			List<ContractEvent> blockEvents = mainNet.getBlockEvents(tran_index);
+			List<DeployContractTransaction> blockEvents = mainNet.getBlockEvents(tran_index);
 			return blockEvents;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -156,8 +157,14 @@ public class TRXBlockHandle implements BlockHandleApi {
 
 	public TronKit kit = new TronKit(mainNet, Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
 	private HashMap<String, BigInteger> d_map = new HashMap<>();
-
+	
 	public BigDecimal 转数额(BigInteger bigInteger, String contractAddress) {
+		if(Other.isInteger(contractAddress)) {
+			return new BigDecimal(bigInteger);
+		}
+		if(StringUtils.isBlank(contractAddress)) {
+			return new BigDecimal(bigInteger).divide(new BigDecimal(1000000), 6, BigDecimal.ROUND_DOWN);
+		}
 		BigInteger decimals = d_map.get(contractAddress);
 		if (decimals == null) {
 			synchronized (map) {

@@ -126,6 +126,15 @@ public class Symbol implements Mugui {
 		Integer count = dao.count(newBean);
 		return Message.ok(selectArrayDESC).setExtra(count + "");
 	}
+	
+	public Message certLog(NetBag bag) {
+
+		PageUtil.offsetPage(bag);
+		DGKeepBean newBean = DGKeepBean.newBean(DGKeepBean.class, bag.getData());
+		JSONArray selectArrayDESC = dao.selectArrayDESC(newBean);
+		Integer count = dao.count(newBean);
+		return Message.ok(selectArrayDESC).setExtra(count + "");
+	}
 
 	/**
 	 * 得到某交易对的基本描述

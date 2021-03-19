@@ -1,12 +1,12 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,6 +20,7 @@ import com.mugui.util.Other;
 import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.thread.NamedThreadFactory;
 import cn.hutool.core.thread.RejectPolicy;
+import cn.hutool.core.util.HexUtil;
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
@@ -27,7 +28,9 @@ import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
 import cn.net.mugui.ge.DraGonSwap.block.TRXBlockHandle;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
-import cn.net.mugui.ge.block.tron.TRC20.ContractEvent;
+import cn.net.mugui.ge.block.tron.TRC20.Address;
+import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction;
+import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction.Contract;
 
 @AutoTask
 @Task()
@@ -112,36 +115,58 @@ public class TRXTranLogTask extends TaskImpl {
 		return "Tron";
 	}
 
-	protected List<BlockTranBean> handle(Object tran) {
+	public String toBase58(String address) {
+		return Address.encode("0x" + address);
+	}
 
+	protected List<BlockTranBean> handle(Object tran) {
 		LinkedList<BlockTranBean> linkedList = new LinkedList<>();
 		if (tran == null) {
 			return linkedList;
 		}
-		List<ContractEvent> blockEvents = (List<ContractEvent>) tran;
-		blockEvents = blockEvents.stream().filter(x -> x.eventName.equals("Transfer")).collect(Collectors.toList());
-		for (ContractEvent event : blockEvents) {
-			String from = null;
-			String to = null;
-			try {
-				from = event.result.get("from").toString();
-				to = event.result.get("to").toString();
-			} catch (Exception e) {
-				continue;
-			}
-			Object o = event.result.get("value");
-			if (o == null) {
-				continue;
-			}
-			BigDecimal amount = new BigDecimal(o.toString());
-			String contractAddress = event.contractAddress;
+		List<DeployContractTransaction> blockEvents = (List<DeployContractTransaction>) tran;
+		for (DeployContractTransaction event : blockEvents) {
+			Contract[] clone = event.rawData.contract;
+			for (Contract contract : clone) {
+				String from = null;
+				String to = null;
+				BigInteger amount = null;
+				String contractAddress = null;
+				DeployContractTransaction.Value value = contract.parameter.value;
+				if (contract.type.equals("TransferContract")) {// 普通转账
+					amount = new BigInteger(value.amount + "");
+					from = toBase58(value.ownerAddress);
+					to = toBase58(value.toAddress);
+				} else if (contract.type.equals("TriggerSmartContract")) {// trc20
+					from = toBase58(value.ownerAddress);
+					contractAddress = toBase58(value.contract_address);
+					String data = value.data;
+					if (data.startsWith("a9059cbb")) {
+						BigInteger integer = new BigInteger(data.substring(8, 72), 16);
+						String string = integer.toString(16);
+						if (!string.startsWith("41")) {
+							to = toBase58("41" + string);
+						} else
+							to = toBase58(string);
+						amount = new BigInteger(data.substring(72), 16);
+					} else {
+						continue;
+					}
+				} else if (contract.type.equals("TransferAssetContract")) {// trc10
+					from = toBase58(value.ownerAddress);
+					contractAddress = HexUtil.decodeHexStr(value.asset_name);
+					to = value.toAddress;
+				} else {
+					continue;
+				}
 
-			String string = map.get(to);
-			if (string != null) {
-				BigDecimal t = blockHandleApi.转数额(amount.toBigInteger(), contractAddress);
-				linkedList.add(new BlockTranBean().setFrom(from).setTo(to).setToken(contractAddress).setNum(t).setHash(event.transactionId).setBlock(getName()));
-
+				String string = map.get(to);
+				if (string != null) {
+					BigDecimal t = blockHandleApi.转数额(amount, contractAddress);
+					linkedList.add(new BlockTranBean().setFrom(from).setTo(to).setToken(contractAddress).setNum(t).setHash(event.txId).setBlock(getName()));
+				}
 			}
+
 		}
 		return linkedList;
 	}
@@ -185,7 +210,7 @@ public class TRXTranLogTask extends TaskImpl {
 			return;
 		}
 		int corePoolSize = TRON_SCAN_TASK.getCorePoolSize();
-		for (int i = Integer.parseInt(value) ; i < lastBlock; i++) {
+		for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
 			redisClient.opsForList().rightPush(TRON_SCAN + "_" + (i % corePoolSize), i + "");
 		}
 		conf.setValue(getName() + "_tran_log_index", lastBlock + "");

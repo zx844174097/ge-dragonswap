@@ -105,7 +105,6 @@ public class DGCertTask extends TaskImpl {
 				if (dgSymbol.getSymbol_status() != DGSymbolBean.SYMBOL_STATUS_1) {
 					return;
 				}
-
 				if (ransomTask.handle(blockChainBean, dgSymbol)) {
 					continue;
 				}
@@ -218,7 +217,7 @@ public class DGCertTask extends TaskImpl {
 			dgKeepBean.setToken_num(divide2);
 
 			DGKeepBean last = dao.selectDESC(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7));
-			BigDecimal last_big = BigDecimal.ZERO; 
+			BigDecimal last_big = BigDecimal.ZERO;
 			if (last != null) {
 				last_big = last.getNow_out_cert_token_num();
 			} else {
@@ -241,10 +240,9 @@ public class DGCertTask extends TaskImpl {
 
 		}
 	}
-	
+
 	@Autowired
 	private KCertLineTask kCertLineTask;
-	
 
 	@Autowired
 	DGSymbolConfUtil confUtil;
