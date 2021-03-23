@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mugui.Mugui;
+import com.mugui.bean.DefaultJsonBean;
 import com.mugui.spring.base.Module;
 import com.mugui.spring.net.authority.Authority;
 import com.mugui.spring.net.bean.Message;
@@ -19,6 +20,7 @@ import com.mugui.spring.net.bean.NetBag;
 import com.mugui.spring.net.dblistener.PageUtil;
 import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
+import com.mugui.wallet.controller.TronServiceApi;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGCertQuotes;
@@ -241,6 +243,55 @@ public class Symbol implements Mugui {
 
 	@Autowired
 	private BlockService blockService;
+
+	@Autowired
+	private TronServiceApi tronServiceApi;
+
+	public Message pushPubBySign(NetBag bag) {
+		DefaultJsonBean defaultJsonBean = DefaultJsonBean.newBean(DefaultJsonBean.class, bag.getData());
+		String bind_address = defaultJsonBean.get().getString("bind_address");
+		if (StringUtils.isBlank(bind_address) || bind_address.length() != 34) {
+			return Message.error("地址参数错误");
+		}
+		String sign = defaultJsonBean.get().getString("sign");
+		String is_login = defaultJsonBean.get().getString("msg");
+		if (StringUtils.isBlank(is_login)) {
+			return Message.error("参数错误");
+		}
+		String pub = tronServiceApi.verifySignRetPub(bind_address, sign, is_login, true);
+		if (StringUtils.isBlank(pub)) {
+			return Message.error("签名校验失败");
+		}
+		DGAddressBindBean dgAddressBindBean = new DGAddressBindBean();
+		dgAddressBindBean.setPub(pub);
+		if (dao.select(dgAddressBindBean) == null) {
+			dgAddressBindBean.setBlock_name("Tron");
+			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(), dgAddressBindBean.getPub().substring(2));
+			dgAddressBindBean.setAddress(addressByPub);
+			dgAddressBindBean.setDatum_address(addressByPub);
+			dgAddressBindBean = dao.save(dgAddressBindBean);
+
+			DGAddressBindBean ETH = new DGAddressBindBean();
+			ETH.setPub(pub);
+			ETH.setBlock_name("ETH");
+			addressByPub = blockService.getAddressByPub(ETH.getBlock_name(), ETH.getPub().substring(2));
+			ETH.setAddress(addressByPub);
+			ETH.setDatum_address(dgAddressBindBean.getAddress());
+			ETH = dao.save(ETH);
+
+		}
+
+		DGAddressBindBean BTC = new DGAddressBindBean();
+		BTC.setPub("03" + pub.substring(2, 66));
+		if (dao.select(BTC) == null) {
+			BTC.setBlock_name("BTC");
+			String addressByPub = blockService.getAddressByPub(BTC.getBlock_name(), BTC.getPub());
+			BTC.setAddress(addressByPub);
+			BTC.setDatum_address(dgAddressBindBean.getAddress());
+			BTC = dao.save(BTC);
+		}
+		return Message.ok();
+	}
 
 	/**
 	 * 提交公钥

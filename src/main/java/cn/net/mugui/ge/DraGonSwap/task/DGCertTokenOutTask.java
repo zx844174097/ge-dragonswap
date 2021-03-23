@@ -81,6 +81,12 @@ public class DGCertTokenOutTask extends TaskImpl {
 						dao.updata(poll);
 						break;
 					}
+					if (System.currentTimeMillis() - poll.getKeep_create_time().getTime() > 60000) {
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
+						poll.setKeep_type(DGKeepBean.keep_type_2);
+						dao.updata(poll);
+						break;
+					}
 					broadcastTran(poll);
 					break;
 				default:
@@ -96,6 +102,12 @@ public class DGCertTokenOutTask extends TaskImpl {
 					// 判断交易是否成功
 					if (isSucessFunds(poll)) {
 						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
+						dao.updata(poll);
+						break;
+					}
+					if (System.currentTimeMillis() - poll.getKeep_create_time().getTime() > 60000) {
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
+						poll.setKeep_type(DGKeepBean.keep_type_3);
 						dao.updata(poll);
 						break;
 					}

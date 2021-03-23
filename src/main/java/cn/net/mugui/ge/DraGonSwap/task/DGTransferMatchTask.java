@@ -147,7 +147,7 @@ public class DGTransferMatchTask extends TaskImpl {
 			return;
 		}
 		SwapBean swapBean = manager.get(bean.getDg_symbol());
-		System.out.println("handle 处理-》"+bean);
+		System.out.println("handle 处理-》" + bean);
 		BigDecimal bc_amount = bean.getFrom_num();
 		BigDecimal fee_num = bean.getFee_num();
 		bc_amount = bc_amount.subtract(fee_num);
@@ -159,11 +159,11 @@ public class DGTransferMatchTask extends TaskImpl {
 			boolean bol = dgSymbolDescriptUtil.reckonInBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 			if (bol) {
 
-				BigDecimal multiply = fee_num.multiply(system_fee_scale);
+				BigDecimal multiply = fee_num.multiply(system_fee_scale).setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_UP).stripTrailingZeros();
 
 				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[0]));
 
-				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, multiply);
+				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply));
 				bean.setTo_num(inBase);
 				bean.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
@@ -179,10 +179,10 @@ public class DGTransferMatchTask extends TaskImpl {
 
 			if (bol) {
 
-				BigDecimal multiply = fee_num.multiply(system_fee_scale);
+				BigDecimal multiply = fee_num.multiply(system_fee_scale).setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_UP);
 
 				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[1]));
-				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, multiply);
+				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply));
 				bean.setTo_num(inQuote);
 				bean.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);

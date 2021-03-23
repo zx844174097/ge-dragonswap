@@ -139,6 +139,14 @@ public class DGKeepBean extends JsonBean {
 	public static final int keep_type_1 = 1;
 
 	/**
+	 * 资金池出金失败
+	 */
+	public static final int keep_type_3 = 3;
+	/**
+	 * 流动性出金失败
+	 */
+	public static final int keep_type_2 = 2;
+	/**
 	 * 类型
 	 */
 	@SQLField(DEFAULT = true, DEFAULT_text = "0")
@@ -147,12 +155,12 @@ public class DGKeepBean extends JsonBean {
 	/**
 	 * 前一次流动性总量
 	 */
-	@SQLField(DATA_TYPE = "varchar(64)",DEFAULT = true,DEFAULT_text = "0",NULL = false)
+	@SQLField(DATA_TYPE = "varchar(64)", DEFAULT = true, DEFAULT_text = "0", NULL = false)
 	private BigDecimal last_out_cert_token_num;
 	/**
 	 * 当前流动性总量
 	 */
-	@SQLField(DATA_TYPE = "varchar(64)",DEFAULT = true,DEFAULT_text = "0",NULL = false)
+	@SQLField(DATA_TYPE = "varchar(64)", DEFAULT = true, DEFAULT_text = "0", NULL = false)
 	private BigDecimal now_out_cert_token_num;
 
 	/**

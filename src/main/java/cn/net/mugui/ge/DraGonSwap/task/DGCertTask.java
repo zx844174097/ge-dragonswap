@@ -215,15 +215,17 @@ public class DGCertTask extends TaskImpl {
 //			}
 //			BigDecimal divide2 = base.multiply(quotes).divide(new BigDecimal("8"));
 
+			divide2 = divide2.setScale(18, BigDecimal.ROUND_DOWN);
 			dgKeepBean.setToken_num(divide2);
 
 			DGKeepBean last = dao.selectDESC(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7));
-			BigDecimal last_big = BigDecimal.ZERO; 
+			BigDecimal last_big = BigDecimal.ZERO;
 			if (last != null) {
 				last_big = last.getNow_out_cert_token_num();
 			} else {
 				last_big = BigDecimal.ZERO;
 			}
+			last_big = last_big.setScale(18, BigDecimal.ROUND_DOWN);
 
 			DGSymbolConfBean select = confUtil.getByContract_address(select2.getToken_address());
 
@@ -241,10 +243,9 @@ public class DGCertTask extends TaskImpl {
 
 		}
 	}
-	
+
 	@Autowired
 	private KCertLineTask kCertLineTask;
-	
 
 	@Autowired
 	DGSymbolConfUtil confUtil;

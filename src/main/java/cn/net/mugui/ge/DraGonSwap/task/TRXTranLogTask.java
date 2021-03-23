@@ -44,7 +44,6 @@ public class TRXTranLogTask extends TaskImpl {
 	public void init() {
 		super.init();
 		dao.createTable(BlockTranBean.class);
-		redisClient = reactor.getRedisClient(5);
 		blockHandleApi = (TRXBlockHandle) blockManager.get(getName());
 		initListenerAddress();
 		for (int i = 0; i < TRON_SCAN_TASK.getCorePoolSize(); i++) {
@@ -85,6 +84,7 @@ public class TRXTranLogTask extends TaskImpl {
 		}
 
 		public void handle() {
+			StringRedisTemplate redisClient = reactor.getRedisClient(5);
 			while (true) {
 				String leftPop = redisClient.opsForList().leftPop(redis_key);
 				if (leftPop == null) {
@@ -147,17 +147,23 @@ public class TRXTranLogTask extends TaskImpl {
 					from = toBase58(value.ownerAddress);
 					contractAddress = toBase58(value.contract_address);
 					String data = value.data;
-					if (data.startsWith("a9059cbb")) {
-						BigInteger integer = new BigInteger(data.substring(8, 72), 16);
-						String string = integer.toString(16);
-						if (!string.startsWith("41")) {
-							to = toBase58("41" + string);
-						} else
-							to = toBase58(string);
-						amount = new BigInteger(data.substring(72), 16);
-					} else {
+					try {
+						if (data.startsWith("a9059cbb")) {
+							BigInteger integer = new BigInteger(data.substring(8, 72), 16);
+							String string = integer.toString(16);
+							if (!string.startsWith("41")) {
+								to = toBase58("41" + string);
+							} else
+								to = toBase58(string);
+							amount = new BigInteger(data.substring(72), 16);
+						} else {
+							continue;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 						continue;
 					}
+
 				} else if (contract.type.equals("TransferAssetContract")) {// trc10
 					from = toBase58(value.ownerAddress);
 					contractAddress = HexUtil.decodeHexStr(value.asset_name);
@@ -185,8 +191,6 @@ public class TRXTranLogTask extends TaskImpl {
 
 	@Autowired
 	private RedisAccess reactor;
-
-	StringRedisTemplate redisClient = null;
 
 	@Override
 	public void run() {
@@ -216,6 +220,7 @@ public class TRXTranLogTask extends TaskImpl {
 			return;
 		}
 		int corePoolSize = TRON_SCAN_TASK.getCorePoolSize();
+		StringRedisTemplate redisClient = reactor.getRedisClient(5);
 		for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
 			redisClient.opsForList().rightPush(TRON_SCAN + "_" + (i % corePoolSize), i + "");
 		}

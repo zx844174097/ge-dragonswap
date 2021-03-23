@@ -80,6 +80,12 @@ public class DGTransferTokenOutTask extends TaskImpl {
 					dao.updata(poll);
 					break;
 				}
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime()>60000) {
+					poll.setLog_status(DGTranLogBean.log_status_3);
+					poll.setLog_detail("转账失败");
+					dao.updata(poll);
+					break;
+				}
 				broadcastTran(poll);
 				break;
 			default:
