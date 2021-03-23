@@ -11,6 +11,7 @@ import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.sql.SqlServer;
+import com.mugui.sql.TableMode;
 import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
@@ -166,7 +167,7 @@ public class DGCertTask extends TaskImpl {
 			}
 			DGSymbolConfBean select5 = dgSymbolConfUtil.getByContract_address(blockChainBean.getToken());
 			if (select5 == null) {
-				dgKeepBean.setKeep_status(DGKeepBean.KEEP_STATUS_3);
+				dgKeepBean.setKeep_type(DGKeepBean.keep_type_4);
 				dao.updata(dgKeepBean);
 				return;
 			}
@@ -218,7 +219,7 @@ public class DGCertTask extends TaskImpl {
 			divide2 = divide2.setScale(18, BigDecimal.ROUND_DOWN);
 			dgKeepBean.setToken_num(divide2);
 
-			DGKeepBean last = dao.selectDESC(new DGKeepBean().setDg_symbol(dgKeepBean.getDg_symbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7));
+			DGKeepBean last = getLastKeepBean();
 			BigDecimal last_big = BigDecimal.ZERO;
 			if (last != null) {
 				last_big = last.getNow_out_cert_token_num();
@@ -235,6 +236,7 @@ public class DGCertTask extends TaskImpl {
 			dgKeepBean.setNow_out_cert_token_num(last_big.add(dgKeepBean.getToken_num()));
 			dgKeepBean.setKeep_status(DGKeepBean.KEEP_STATUS_2);
 			dao.updata(dgKeepBean);
+			setLastKeepBean(dgKeepBean);
 			// 更新持有总量
 			dgsymbolDes.updateTotal(swapBean, dgKeepBean.getBase_num(), dgKeepBean.getQuotes_num());
 			kCertLineTask.add(dgKeepBean);
@@ -252,5 +254,21 @@ public class DGCertTask extends TaskImpl {
 
 	@Autowired
 	private DSymbolManager manager;
+
+	private DGKeepBean last_keep = null;
+
+	public synchronized DGKeepBean getLastKeepBean() {
+		if (last_keep == null) {
+			TableMode selectSql = dao.selectSql("SELECT * FROM `dg_keep` WHERE (keep_type=0 AND keep_status>=2)  OR (keep_type=1 ) ORDER BY dg_keep_id DESC LIMIT 1");
+			DGKeepBean dgKeepBean = dao.get(selectSql, 0, DGKeepBean.class);
+			last_keep = dgKeepBean;
+		}
+		return last_keep;
+
+	}
+
+	public synchronized void setLastKeepBean(DGKeepBean keepBean) {
+		last_keep = keepBean;
+	}
 
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.mugui.spring.net.bean.Message;
+import com.mugui.util.Other;
 
 @Component
 public class BlockService {
@@ -59,6 +60,7 @@ public class BlockService {
 			return getBlockHandleApi(block_name).isSucess(hash);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Other.sleep(5000);
 			return false;
 		}
 	}

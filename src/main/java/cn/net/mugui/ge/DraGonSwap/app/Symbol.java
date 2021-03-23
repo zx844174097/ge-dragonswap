@@ -36,6 +36,7 @@ import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DGPriAddressCache;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
+import cn.net.mugui.ge.DraGonSwap.task.DGCertTask;
 import cn.net.mugui.ge.util.RedisUtil;
 
 @Authority(true)
@@ -90,8 +91,7 @@ public class Symbol implements Mugui {
 			jsonObject.putAll(swapBean.symbol_des.get());
 			jsonObject.put("token_address", swapBean.create.getToken_address());
 
-			DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7);
-			DGKeepBean select2 = dao.selectDESC(dgKeepTranLogBean);
+			DGKeepBean select2 =task.getLastKeepBean();
 			if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 				jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 			} else {
@@ -101,6 +101,8 @@ public class Symbol implements Mugui {
 		}
 		return Message.ok(array);
 	}
+	@Autowired
+	private DGCertTask task;
 
 	public Message address(NetBag bag) {
 
@@ -167,8 +169,7 @@ public class Symbol implements Mugui {
 //			}
 		}
 
-		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbolBean.getSymbol()).setKeep_status(DGKeepBean.KEEP_STATUS_7);
-		DGKeepBean select2 = dao.selectDESC(dgKeepTranLogBean);
+		DGKeepBean select2 = task.getLastKeepBean();
 		if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 			jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 		} else {

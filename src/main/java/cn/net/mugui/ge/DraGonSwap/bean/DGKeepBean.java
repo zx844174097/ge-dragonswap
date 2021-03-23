@@ -147,6 +147,10 @@ public class DGKeepBean extends JsonBean {
 	 */
 	public static final int keep_type_2 = 2;
 	/**
+	 * 失败
+	 */
+	public static final int keep_type_4 = 4;
+	/**
 	 * 类型
 	 */
 	@SQLField(DEFAULT = true, DEFAULT_text = "0")

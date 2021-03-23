@@ -36,6 +36,9 @@ public class DGCertRansomTask {
 
 	@Autowired
 	private DGSymbolConfUtil confUtil;
+	
+	@Autowired
+	private DGCertTask certTask;
 
 	public boolean handle(BlockTranBean blockChainBean, DGSymbolBean dgSymbol) {
 		SwapBean swapBean = manager.get(dgSymbol.getSymbol());
@@ -56,7 +59,7 @@ public class DGCertRansomTask {
 		dgKeepTranLogBean.setKeep_type(DGKeepBean.keep_type_1);
 		dgKeepTranLogBean.setHash_3(blockChainBean.getHash());
 		dgKeepTranLogBean.setBlock_3(blockChainBean.getBlock());
-		DGKeepBean last_dg_keep = dao.selectDESC(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_7));
+		DGKeepBean last_dg_keep = certTask.getLastKeepBean();
 		BigDecimal now_out_cert_token_num = last_dg_keep.getNow_out_cert_token_num();
 
 		BigDecimal divide = dgKeepTranLogBean.getToken_num().divide(now_out_cert_token_num, 32, BigDecimal.ROUND_DOWN);
@@ -84,6 +87,7 @@ public class DGCertRansomTask {
 		dgKeepTranLogBean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
 		descriptUtil.updateTotal(swapBean, base.negate(), quote.negate());
 		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
+		certTask.setLastKeepBean(dgKeepTranLogBean);
 		kCertLineTask.add(dgKeepTranLogBean);
 		outTask.add(dgKeepTranLogBean);
 		return true;
