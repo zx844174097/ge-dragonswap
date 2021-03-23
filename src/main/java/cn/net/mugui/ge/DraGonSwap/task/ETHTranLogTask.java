@@ -56,7 +56,7 @@ public class ETHTranLogTask extends DefaultTranLogTask {
 					tranBean.setBlock(getName()).setFrom(o.getFrom()).setTo(o.getTo());
 					tranBean.setNum(new BigDecimal(o.getValue()).divide(new BigDecimal("1E18"))).setHash(o.getHash());
 					// 0xa9059cbb0000000000000000000000003f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be00000000000000000000000000000000000000000000000000000000f4610900
-					if (o.getInput().startsWith("0xa9059cbb")) {
+					if (o.getInput().startsWith("0xa9059cbb00")) {
 						tranBean.setToken(o.getTo());
 						tranBean.setTo("0x" + o.getInput().substring(34, 34 + 40));
 						if (map.get(tranBean.getTo()) != null) {
