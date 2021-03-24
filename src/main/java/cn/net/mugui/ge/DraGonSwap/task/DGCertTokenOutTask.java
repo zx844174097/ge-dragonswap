@@ -75,6 +75,10 @@ public class DGCertTokenOutTask extends TaskImpl {
 					break;
 
 				case DGKeepBean.KEEP_STATUS_3:
+					if (System.currentTimeMillis() - poll.getKeep_create_time().getTime() < 5000) {
+						add(poll);
+						break;
+					}
 					// 判断交易是否成功
 					if (isSucess(poll)) {
 						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
@@ -99,6 +103,10 @@ public class DGCertTokenOutTask extends TaskImpl {
 					break;
 
 				case DGKeepBean.KEEP_STATUS_5:
+					if (System.currentTimeMillis() - poll.getKeep_create_time().getTime() < 5000) {
+						add(poll);
+						break;
+					}
 					// 判断交易是否成功
 					if (isSucessFunds(poll)) {
 						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);

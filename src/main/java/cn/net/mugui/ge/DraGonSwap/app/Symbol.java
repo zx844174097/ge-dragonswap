@@ -32,6 +32,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.bean.PushRemarkBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
+import cn.net.mugui.ge.DraGonSwap.block.TRXBlockHandle;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DGPriAddressCache;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
@@ -91,7 +92,7 @@ public class Symbol implements Mugui {
 			jsonObject.putAll(swapBean.symbol_des.get());
 			jsonObject.put("token_address", swapBean.create.getToken_address());
 
-			DGKeepBean select2 =task.getLastKeepBean();
+			DGKeepBean select2 = task.getLastKeepBean();
 			if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 				jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 			} else {
@@ -101,6 +102,7 @@ public class Symbol implements Mugui {
 		}
 		return Message.ok(array);
 	}
+
 	@Autowired
 	private DGCertTask task;
 
@@ -248,6 +250,9 @@ public class Symbol implements Mugui {
 	@Autowired
 	private TronServiceApi tronServiceApi;
 
+	@Autowired
+	private TRXBlockHandle trxBlockHandle;
+
 	public Message pushPubBySign(NetBag bag) {
 		DefaultJsonBean defaultJsonBean = DefaultJsonBean.newBean(DefaultJsonBean.class, bag.getData());
 		String bind_address = defaultJsonBean.get().getString("bind_address");
@@ -262,6 +267,10 @@ public class Symbol implements Mugui {
 		String pub = tronServiceApi.verifySignRetPub(bind_address, sign, is_login, true);
 		if (StringUtils.isBlank(pub)) {
 			return Message.error("签名校验失败");
+		}
+		String addressByPub2 = trxBlockHandle.getAddressByPub(pub);
+		if (!addressByPub2.equals(bind_address)) {
+			return Message.error("参数错误");
 		}
 		DGAddressBindBean dgAddressBindBean = new DGAddressBindBean();
 		dgAddressBindBean.setPub(pub);

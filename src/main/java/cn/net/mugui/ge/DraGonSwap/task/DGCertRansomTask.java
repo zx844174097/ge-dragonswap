@@ -1,6 +1,7 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -86,6 +87,7 @@ public class DGCertRansomTask {
 		dgKeepTranLogBean.setNow_out_cert_token_num(now_out_cert_token_num.subtract(dgKeepTranLogBean.getToken_num()));
 		dgKeepTranLogBean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
 		descriptUtil.updateTotal(swapBean, base.negate(), quote.negate());
+		dgKeepTranLogBean.setKeep_create_time(new Date());
 		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
 		certTask.setLastKeepBean(dgKeepTranLogBean);
 		kCertLineTask.add(dgKeepTranLogBean);

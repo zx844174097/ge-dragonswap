@@ -1,5 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
+import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,13 +75,20 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				break;
 
 			case DGTranLogBean.log_status_2:
+				if(poll.getTran_log_create_time()==null) {
+					poll.setTran_log_create_time(new Date());
+				}
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 5000) {
+					add(poll);
+					break;
+				}
 				// 判断交易是否成功
 				if (isSucess(poll)) {
 					poll.setLog_status(DGTranLogBean.log_status_5);
 					dao.updata(poll);
 					break;
 				}
-				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime()>60000) {
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() > 60000) {
 					poll.setLog_status(DGTranLogBean.log_status_3);
 					poll.setLog_detail("转账失败");
 					dao.updata(poll);

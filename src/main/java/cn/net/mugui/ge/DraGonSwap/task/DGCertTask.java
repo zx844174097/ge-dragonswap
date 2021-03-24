@@ -191,35 +191,19 @@ public class DGCertTask extends TaskImpl {
 				dao.updata(select2);
 			}
 
-			// BigDecimal divide =
-			// dgKeepBean.getQuotes_keep_num().divide(dgKeepBean.getBase_keep_num(), 8,
-			// BigDecimal.ROUND_DOWN);
-
+			DGKeepBean last = getLastKeepBean();
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal divide2 = null;
 			if (symbol_des.getScale().compareTo(BigDecimal.ZERO) <= 0) {
 				divide2 = dgKeepBean.getQuotes_num().multiply(new BigDecimal("2"));
 			} else {
 				divide2 = symbol_des.getScale().multiply(dgKeepBean.getBase_num()).add(dgKeepBean.getQuotes_num());
+				BigDecimal add = symbol_des.getScale().multiply(symbol_des.getBase_num()).add(symbol_des.getQuote_num());
+				divide2 = divide2.divide(add,18,BigDecimal.ROUND_DOWN).multiply(last.getNow_out_cert_token_num());
 			}
-
-//			BigDecimal base = BigDecimal.ZERO;
-//			BigDecimal quotes = BigDecimal.ZERO;
-//
-//			if (divide.compareTo(select2.getCreate_init_price()) >= 0) {
-//				base = dgKeepBean.getBase_keep_num();
-//				quotes = dgKeepBean.getBase_keep_num().multiply(select2.getCreate_init_price());
-//			} else {
-//				quotes = dgKeepBean.getQuotes_keep_num();
-//				DGSymbolConfBean select3 = dgSymbolConfUtil.get(dgSymbol.getBase_currency());
-//				base = dgKeepBean.getQuotes_keep_num().divide(select2.getCreate_init_price(), select3.getPrecision(), BigDecimal.ROUND_HALF_UP);
-//			}
-//			BigDecimal divide2 = base.multiply(quotes).divide(new BigDecimal("8"));
-
 			divide2 = divide2.setScale(18, BigDecimal.ROUND_DOWN);
 			dgKeepBean.setToken_num(divide2);
 
-			DGKeepBean last = getLastKeepBean();
 			BigDecimal last_big = BigDecimal.ZERO;
 			if (last != null) {
 				last_big = last.getNow_out_cert_token_num();

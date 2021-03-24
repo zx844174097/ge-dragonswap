@@ -2,6 +2,7 @@ package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -133,6 +134,7 @@ public class DGTransferMatchTask extends TaskImpl {
 		bean.setTo_num(bean.getFrom_num());
 		bean.setTo_token(bean.getFrom_token());
 		bean.setTo_token_name(bean.getFrom_token_name());
+		bean.setTran_log_create_time(new Date());
 		transfer.add(bean);
 	}
 
