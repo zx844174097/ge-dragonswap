@@ -22,7 +22,6 @@ import cn.net.mugui.ge.block.tron.TRC20.ApiResult;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Credential;
 import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction;
-import cn.net.mugui.ge.block.tron.TRC20.TransferTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Trc20;
 import cn.net.mugui.ge.block.tron.TRC20.TronApi;
 import cn.net.mugui.ge.block.tron.TRC20.TronKit;
@@ -64,7 +63,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 			return tokenSignMessage;
 
 		} else {
-			TransferTransaction tokenSignMessage = null;
+			ContractTransaction tokenSignMessage = null;
 			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, tempBean.address);
 			String sign = credential.sign(tokenSignMessage.txId);
 			tokenSignMessage.signature = new String[] { sign };

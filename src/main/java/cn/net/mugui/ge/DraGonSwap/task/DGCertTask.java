@@ -107,9 +107,9 @@ public class DGCertTask extends TaskImpl {
 					return;
 				}
 
-				if (ransomTask.handle(blockChainBean, dgSymbol)) {
-					continue;
-				}
+//				if (ransomTask.handle(blockChainBean, dgSymbol)) {
+//					continue;
+//				}
 				Object redis = redisUtil.getRedis("wait_" + blockChainBean.getHash());
 				if (redis == null) {
 					continue;
