@@ -2,11 +2,8 @@ package cn.net.mugui.ge.DraGonSwap.manager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hx.blockchain.manager.BCFactoryManagerApi;
-import com.hx.blockchain.service.BlockChainServiceApi;
 import com.mugui.spring.base.Manager;
 import com.mugui.spring.net.auto.AutoManager;
 
@@ -16,6 +13,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
 import cn.net.mugui.ge.DraGonSwap.block.BlockManager;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
+import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 /**
  * 私钥与地址绑定关系缓存
@@ -62,9 +60,17 @@ public class DGPriAddressCache extends Manager<String, String> {
 				select.setAddress(address);
 				select.setDg_symbol_id(pri_tran.getDg_symbol_id());
 				select = dao.save(select);
+				try {
+					if (select.getBlock_name().equals("Tron"))
+						invateservice.addAddress(address);
+				} catch (Exception e) {
+				}
 			}
 			add(key, string = select.getAddress());
 		}
 		return string;
 	}
+
+	@Reference
+	private InvateFilterServiceApi invateservice;
 }

@@ -1,7 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
-import com.mugui.sql.SqlServer;
 import com.mugui.sql.TableMode;
 import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
@@ -107,9 +105,9 @@ public class DGCertTask extends TaskImpl {
 					return;
 				}
 
-//				if (ransomTask.handle(blockChainBean, dgSymbol)) {
-//					continue;
-//				}
+				if (ransomTask.handle(blockChainBean, dgSymbol)) {
+					continue;
+				}
 				Object redis = redisUtil.getRedis("wait_" + blockChainBean.getHash());
 				if (redis == null) {
 					continue;
@@ -119,25 +117,12 @@ public class DGCertTask extends TaskImpl {
 					continue;
 				}
 				redisUtil.deleteRedis("wait_" + blockChainBean.getHash());
-
-				try {
-					dao.getSqlServer().setAutoCommit(false);
-					handle(blockChainBean, remarkBean, dgSymbol);
-					dao.getSqlServer().commit();
-				} catch (Exception e) {
-					e.printStackTrace();
-					try {
-						dao.getSqlServer().rollback();
-						SqlServer.reback();
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-				}
+				handle(blockChainBean, remarkBean, dgSymbol);
 			}
 		}
 	}
 
-	private void handle(BlockTranBean blockChainBean, PushRemarkBean remarkBean, DGSymbolBean dgSymbol) throws SQLException, Exception {
+	private void handle(BlockTranBean blockChainBean, PushRemarkBean remarkBean, DGSymbolBean dgSymbol) {
 		// 处理流动性凭证
 		DGKeepBean dgKeepBean = new DGKeepBean();
 		dgKeepBean.setHash_1(remarkBean.getRemark());
@@ -199,7 +184,7 @@ public class DGCertTask extends TaskImpl {
 			} else {
 				divide2 = symbol_des.getScale().multiply(dgKeepBean.getBase_num()).add(dgKeepBean.getQuotes_num());
 				BigDecimal add = symbol_des.getScale().multiply(symbol_des.getBase_num()).add(symbol_des.getQuote_num());
-				divide2 = divide2.divide(add,18,BigDecimal.ROUND_DOWN).multiply(last.getNow_out_cert_token_num());
+				divide2 = divide2.divide(add, 18, BigDecimal.ROUND_DOWN).multiply(last.getNow_out_cert_token_num());
 			}
 			divide2 = divide2.setScale(18, BigDecimal.ROUND_DOWN);
 			dgKeepBean.setToken_num(divide2);

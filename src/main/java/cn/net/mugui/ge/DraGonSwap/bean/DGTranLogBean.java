@@ -96,7 +96,7 @@ public class DGTranLogBean extends JsonBean {
 	 */
 	@SQLField(DEFAULT = true, DEFAULT_text = "0")
 	private BigDecimal to_limit_num;
- 
+
 	/**
 	 * 交易限制时间
 	 */
@@ -108,8 +108,8 @@ public class DGTranLogBean extends JsonBean {
 	 */
 	@SQLField
 	private String to_hash;
-	
-	@SQLField(DEFAULT = true,DEFAULT_text = "0")
+
+	@SQLField(DEFAULT = true, DEFAULT_text = "0")
 	private BigDecimal fee_num;
 
 	/**
@@ -117,6 +117,18 @@ public class DGTranLogBean extends JsonBean {
 	 */
 	@SQLField
 	private BigDecimal scale;
+
+	@SQLField(DEFAULT = true, DEFAULT_text = "0", DATA_TYPE = "varchar(32)")
+	private BigDecimal start_base_total;
+
+	@SQLField(DEFAULT = true, DEFAULT_text = "0", DATA_TYPE = "varchar(32)")
+	private BigDecimal start_quote_total;
+	
+	@SQLField(DEFAULT = true, DEFAULT_text = "0", DATA_TYPE = "varchar(32)")
+	private BigDecimal end_base_total;
+
+	@SQLField(DEFAULT = true, DEFAULT_text = "0", DATA_TYPE = "varchar(32)")
+	private BigDecimal end_quote_total;
 
 	/**
 	 * 已创建

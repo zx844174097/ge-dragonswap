@@ -37,7 +37,7 @@ public class DGCertRansomTask {
 
 	@Autowired
 	private DGSymbolConfUtil confUtil;
-	
+
 	@Autowired
 	private DGCertTask certTask;
 
@@ -64,34 +64,34 @@ public class DGCertRansomTask {
 		BigDecimal now_out_cert_token_num = last_dg_keep.getNow_out_cert_token_num();
 
 		BigDecimal divide = dgKeepTranLogBean.getToken_num().divide(now_out_cert_token_num, 32, BigDecimal.ROUND_DOWN);
+		synchronized (descriptUtil.getKey(swapBean.symbol.getDg_symbol_id())) {
+			BigDecimal base = swapBean.symbol_des.getBase_num().multiply(divide);
+			{// 基本币种处理
+				DGSymbolConfBean dgSymbolConfBean = confUtil.get(dgSymbol.getBase_currency());
+				base = base.setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_DOWN);
+				dgKeepTranLogBean.setBlock_1(dgSymbolConfBean.getBlock_name());
+				dgKeepTranLogBean.setToken_1(dgSymbolConfBean.getContract_address());
+				dgKeepTranLogBean.setBase_num(base);
+			}
+			BigDecimal quote = swapBean.symbol_des.getQuote_num().multiply(divide);
+			{// 计价币种处理
+				DGSymbolConfBean dgSymbolConfBean = confUtil.get(dgSymbol.getQuote_currency());
+				quote = quote.setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_DOWN);
+				dgKeepTranLogBean.setBlock_2(dgSymbolConfBean.getBlock_name());
+				dgKeepTranLogBean.setToken_2(dgSymbolConfBean.getContract_address());
+				dgKeepTranLogBean.setQuotes_num(quote);
+			}
 
-		BigDecimal base = swapBean.symbol_des.getBase_num().multiply(divide);
-		{// 基本币种处理
-			DGSymbolConfBean dgSymbolConfBean = confUtil.get(dgSymbol.getBase_currency());
-			base = base.setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_DOWN);
-			dgKeepTranLogBean.setBlock_1(dgSymbolConfBean.getBlock_name());
-			dgKeepTranLogBean.setToken_1(dgSymbolConfBean.getContract_address());
-			dgKeepTranLogBean.setBase_num(base);
+			dgKeepTranLogBean.setLast_out_cert_token_num(now_out_cert_token_num);
+			dgKeepTranLogBean.setNow_out_cert_token_num(now_out_cert_token_num.subtract(dgKeepTranLogBean.getToken_num()));
+			dgKeepTranLogBean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
+			descriptUtil.updateTotal(swapBean, base.negate(), quote.negate());
+			dgKeepTranLogBean.setKeep_create_time(new Date());
+			dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
+			certTask.setLastKeepBean(dgKeepTranLogBean);
+			kCertLineTask.add(dgKeepTranLogBean);
+			outTask.add(dgKeepTranLogBean);
 		}
-
-		BigDecimal quote = swapBean.symbol_des.getQuote_num().multiply(divide);
-		{// 计价币种处理
-			DGSymbolConfBean dgSymbolConfBean = confUtil.get(dgSymbol.getQuote_currency());
-			quote = quote.setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_DOWN);
-			dgKeepTranLogBean.setBlock_2(dgSymbolConfBean.getBlock_name());
-			dgKeepTranLogBean.setToken_2(dgSymbolConfBean.getContract_address());
-			dgKeepTranLogBean.setQuotes_num(quote);
-		}
-
-		dgKeepTranLogBean.setLast_out_cert_token_num(now_out_cert_token_num);
-		dgKeepTranLogBean.setNow_out_cert_token_num(now_out_cert_token_num.subtract(dgKeepTranLogBean.getToken_num()));
-		dgKeepTranLogBean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
-		descriptUtil.updateTotal(swapBean, base.negate(), quote.negate());
-		dgKeepTranLogBean.setKeep_create_time(new Date());
-		dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
-		certTask.setLastKeepBean(dgKeepTranLogBean);
-		kCertLineTask.add(dgKeepTranLogBean);
-		outTask.add(dgKeepTranLogBean);
 		return true;
 	}
 

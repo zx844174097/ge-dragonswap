@@ -1,7 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
-import com.mugui.sql.SqlServer;
 import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
@@ -79,39 +77,13 @@ public class DGTransferMatchTask extends TaskImpl {
 		for (Integer key : linkedList) {
 			DGTranLogBean bean = match_list.get(key);
 			if (bean.getTran_log_create_time().getTime() + bean.getTo_limit_time() * 60 * 1000 < currentTimeMillis) {
-				try {
-					dao.getSqlServer().setAutoCommit(false);
-					rollback(bean);
-					dao.getSqlServer().commit();
-				} catch (Exception e) {
-					e.printStackTrace();
-					try {
-						dao.getSqlServer().rollback();
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-				} finally {
-					SqlServer.reback();
-					match_list.remove(key);
-				}
+				rollback(bean);
 			}
 		}
 		linkedList = new LinkedList<>(match_list.keySet());
 		for (Integer key : linkedList) {
-			try {
-				dao.getSqlServer().setAutoCommit(false);
-				handle(match_list.get(key));
-				dao.getSqlServer().commit();
-			} catch (Exception e) {
-				e.printStackTrace();
-				try {
-					dao.getSqlServer().rollback();
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			} finally {
-				SqlServer.reback();
-			}
+			handle(match_list.get(key));
+
 		}
 		addNewLog();
 
@@ -143,7 +115,7 @@ public class DGTransferMatchTask extends TaskImpl {
 
 	private BigDecimal system_fee_scale = new BigDecimal("0.5");
 
-	private void handle(DGTranLogBean bean) throws SQLException, Exception {
+	private void handle(DGTranLogBean bean) {
 		if (bean.getLog_type() != DGTranLogBean.log_type_0) {
 			match_list.remove(bean.getTran_log_id());
 			return;
@@ -162,14 +134,18 @@ public class DGTransferMatchTask extends TaskImpl {
 			if (bol) {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale).setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_UP).stripTrailingZeros();
-
+				
 				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[0]));
-
+				bean.setStart_base_total(swapBean.symbol_des.getBase_num());
+				bean.setStart_quote_total(swapBean.symbol_des.getQuote_num());
 				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply));
+
+				bean.setEnd_base_total(swapBean.symbol_des.getBase_num());
+				bean.setEnd_quote_total(swapBean.symbol_des.getQuote_num());
+				
 				bean.setTo_num(inBase);
 				bean.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
-				dao.getSqlServer().commit();
 				transfer.add(bean);
 				kTranLineTask.add(bean);
 				match_list.remove(bean.getTran_log_id());
@@ -184,11 +160,20 @@ public class DGTransferMatchTask extends TaskImpl {
 				BigDecimal multiply = fee_num.multiply(system_fee_scale).setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_UP);
 
 				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[1]));
+			
+
+				bean.setStart_base_total(swapBean.symbol_des.getBase_num());
+				bean.setStart_quote_total(swapBean.symbol_des.getQuote_num());
+				
 				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply));
+			
+
+				bean.setEnd_base_total(swapBean.symbol_des.getBase_num());
+				bean.setEnd_quote_total(swapBean.symbol_des.getQuote_num());
+				
 				bean.setTo_num(inQuote);
 				bean.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
-				dao.getSqlServer().commit();
 				transfer.add(bean);
 				kTranLineTask.add(bean);
 				match_list.remove(bean.getTran_log_id());
