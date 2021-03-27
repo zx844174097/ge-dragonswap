@@ -16,6 +16,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
+import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 
 /**
  * token交易转出
@@ -75,7 +76,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				break;
 
 			case DGTranLogBean.log_status_2:
-				if(poll.getTran_log_create_time()==null) {
+				if (poll.getTran_log_create_time() == null) {
 					poll.setTran_log_create_time(new Date());
 				}
 				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 5000) {
@@ -109,7 +110,11 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
+		try {
+			Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return;
 	}
 
@@ -121,9 +126,14 @@ public class DGTransferTokenOutTask extends TaskImpl {
 			return;
 		}
 		poll.get().put("broadcast", sendTran.getDate());
-		Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
+		ContractTransaction con1 = (ContractTransaction) sendTran.getDate();
 		// 无论成功与否都修改为以转出
-		poll.setTo_hash(broadcastTran.getDate().toString());
+		poll.setTo_hash(con1.txId);
+		try {
+			Message broadcastTran = blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		poll.setLog_status(DGTranLogBean.log_status_2);
 		dao.updata(poll);
 	}

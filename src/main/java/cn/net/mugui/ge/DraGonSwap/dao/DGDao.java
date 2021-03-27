@@ -1,10 +1,11 @@
 package cn.net.mugui.ge.DraGonSwap.dao;
 
-import org.springframework.stereotype.Component;
+import org.apache.dubbo.config.annotation.Service;
 
+import com.mugui.sql.SqlModeApi;
 import com.mugui.sql.SqlModel;
 
-@Component
+@Service(group = "dg",interfaceClass = SqlModeApi.class)
 public class DGDao extends SqlModel{
 
 }

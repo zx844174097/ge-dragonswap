@@ -3,7 +3,7 @@
 #redisurl: 192.168.0.103
 #redisport: 6379
 #mysqlUrl: 192.168.0.103:3306
-#
+#isTest: true
 #mysqlUser: root
 #mysqlPwd: mugui123
 

@@ -268,7 +268,7 @@ public class Symbol implements Mugui {
 		if (StringUtils.isBlank(pub)) {
 			return Message.error("签名校验失败");
 		}
-		String addressByPub2 = trxBlockHandle.getAddressByPub(pub);
+		String addressByPub2 = trxBlockHandle.getAddressByPub(pub.substring(2));
 		if (!addressByPub2.equals(bind_address)) {
 			return Message.error("参数错误");
 		}

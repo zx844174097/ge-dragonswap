@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
@@ -76,6 +77,9 @@ public class DGCertTask extends TaskImpl {
 
 	@Autowired
 	private DGCertRansomTask ransomTask;
+	
+	@Value("${isTest:false}")
+	private boolean isTest;
 
 	private void handle() {
 		while (true) {
@@ -105,7 +109,7 @@ public class DGCertTask extends TaskImpl {
 					return;
 				}
 
-				if (ransomTask.handle(blockChainBean, dgSymbol)) {
+				if (!isTest&&ransomTask.handle(blockChainBean, dgSymbol)) {
 					continue;
 				}
 				Object redis = redisUtil.getRedis("wait_" + blockChainBean.getHash());

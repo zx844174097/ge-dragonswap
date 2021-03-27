@@ -45,6 +45,7 @@ public class ETHTranLogTask extends DefaultTranLogTask {
 			try {
 				TransactionObject o = (TransactionObject) result;
 				BlockTranBean tranBean = new BlockTranBean();
+				tranBean.setBlock(getName());
 				if (o.getInput().equals("0x")) {
 					if (map.get(o.getTo()) != null) {
 						tranBean.setBlock(getName()).setFrom(o.getFrom()).setTo(o.getTo());

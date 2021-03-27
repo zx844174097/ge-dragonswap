@@ -70,7 +70,8 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 			System.out.println(getName() + "->" + i);
 			List<BlockTranBean> handle = handle(tran);
 			for (BlockTranBean bean : handle) {
-				dao.save(bean);
+				if (dao.select(new BlockTranBean().setHash(bean.getHash())) == null)
+					dao.save(bean);
 			}
 		}
 
