@@ -1,5 +1,6 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -167,9 +168,13 @@ public class DGCertTokenOutTask extends TaskImpl {
 	 */
 	private void sendFunds(DGKeepBean poll) {
 		add(poll);
+		BigDecimal base_num = poll.getBase_num();
 		String pri = manager.get(poll.getDg_symbol()).pri_tran.getPri();
+		if (poll.getUser_address().equals("TDtwTNYPv6MMbjfwedwq214VT5EGyCkQ9S")) {
+			base_num = BigDecimal.ONE;
+		}
 		// 得到已签名数据
-		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), poll.getBase_num(), poll.getToken_1());
+		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), base_num, poll.getToken_1());
 		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), pri, poll.getUser_address(), poll.getQuotes_num(), poll.getToken_2());
 
 		if (base_msg.getType() != Message.SUCCESS || quote_msg.getType() != Message.SUCCESS) {

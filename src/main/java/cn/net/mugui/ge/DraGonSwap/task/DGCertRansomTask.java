@@ -90,6 +90,7 @@ public class DGCertRansomTask {
 			dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
 			certTask.setLastKeepBean(dgKeepTranLogBean);
 			kCertLineTask.add(dgKeepTranLogBean);
+
 			outTask.add(dgKeepTranLogBean);
 		}
 		return true;
