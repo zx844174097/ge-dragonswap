@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mugui.spring.TaskImpl;
@@ -16,6 +17,7 @@ import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
+import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 
 /**
@@ -36,6 +38,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 //		linkedList.addAll(selectList);
 		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_0).setKeep_type(DGKeepBean.keep_type_1));
 		linkedList.addAll(selectList);
+
 	}
 
 	@Override
@@ -161,6 +164,9 @@ public class DGCertTokenOutTask extends TaskImpl {
 		return blockservice.isSucess(poll.getBlock_1(), poll.getHash_1()) && blockservice.isSucess(poll.getBlock_2(), poll.getHash_2());
 	}
 
+	@Autowired
+	private DGConf conf;
+
 	/**
 	 * 发送资金池
 	 * 
@@ -170,8 +176,29 @@ public class DGCertTokenOutTask extends TaskImpl {
 		add(poll);
 		BigDecimal base_num = poll.getBase_num();
 		String pri = manager.get(poll.getDg_symbol()).pri_tran.getPri();
-		if (poll.getUser_address().equals("TDtwTNYPv6MMbjfwedwq214VT5EGyCkQ9S")) {
-			base_num = BigDecimal.ONE;
+
+		String value = conf.getValue("error_back_dc");
+		if (StringUtils.isBlank(value)) {
+			conf.save("error_back_dc", value = "true", "错误交易回收DC");
+		}
+
+		if (value.equals("true") && poll.getUser_address().equals("TSv7E7Ybbq6DxWTfFKCuRMDftA2U4uKXnK")) {
+			String value2 = conf.getValue("error_back_dc_num");
+			String value3 = conf.getValue("error_back_dc_limit_num");
+			if (StringUtils.isBlank(value3)) {
+				conf.save("error_back_dc_limit_num", value3 = "8986", "错误交易回收额度");
+				conf.save("error_back_dc_num", value2 = "0", "错误交易已回收");
+			}
+			BigDecimal subtract = new BigDecimal(value3).subtract(new BigDecimal(value2));
+			if (subtract.compareTo(BigDecimal.ZERO) > 0) {
+				BigDecimal subtract2 = base_num.subtract(subtract);
+				if (subtract2.compareTo(BigDecimal.ZERO) < 0) {
+					base_num = new BigDecimal("0.000000001");
+				} else {
+					base_num = subtract2;
+				} 
+				conf.setValue("error_back_dc_num", new BigDecimal(value2).add(poll.getBase_num().subtract(base_num)).stripTrailingZeros().toPlainString());
+			}
 		}
 		// 得到已签名数据
 		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), base_num, poll.getToken_1());
