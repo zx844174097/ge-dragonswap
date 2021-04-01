@@ -60,6 +60,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 			tokenSignMessage = mainNet.getTokenSignMessage(tempBean.address, contract_address, to_address, amount);
 			String sign = credential.sign(tokenSignMessage.txId);
 			tokenSignMessage.signature = new String[] { sign };
+			txids.set(tokenSignMessage.txId);
 			return tokenSignMessage;
 
 		} else {
@@ -67,6 +68,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, tempBean.address);
 			String sign = credential.sign(tokenSignMessage.txId);
 			tokenSignMessage.signature = new String[] { sign };
+			txids.set(tokenSignMessage.txId);
 			return tokenSignMessage;
 		}
 	}
@@ -156,12 +158,12 @@ public class TRXBlockHandle implements BlockHandleApi {
 
 	public TronKit kit = new TronKit(mainNet, Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
 	private HashMap<String, BigInteger> d_map = new HashMap<>();
-	
+
 	public BigDecimal 转数额(BigInteger bigInteger, String contractAddress) {
-		if(Other.isInteger(contractAddress)) {
+		if (Other.isInteger(contractAddress)) {
 			return new BigDecimal(bigInteger);
 		}
-		if(StringUtils.isBlank(contractAddress)) {
+		if (StringUtils.isBlank(contractAddress)) {
 			return new BigDecimal(bigInteger).divide(new BigDecimal(1000000), 6, BigDecimal.ROUND_DOWN);
 		}
 		BigInteger decimals = d_map.get(contractAddress);

@@ -2,14 +2,15 @@ package cn.net.mugui.ge.DraGonSwap.block;
 
 import java.math.BigDecimal;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.stereotype.Component;
+import org.web3j.crypto.Hash;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.Transaction;
 
 import com.mugui.spring.net.bean.Message;
 
 import cn.net.mugui.ge.block.eth.EthBlock;
-
 
 @Component
 public class ETHBlockHandle implements BlockHandleApi {
@@ -31,6 +32,7 @@ public class ETHBlockHandle implements BlockHandleApi {
 	@Override
 	public Object getSendTran(String pri, String to_address, BigDecimal amount, String token_address) throws Exception {
 		String string = ethBlock.signTran(to_address, pri, amount, token_address, null);
+		txids.set(Hex.toHexString(Hash.sha3(Hex.decode(string.substring(2)))));
 		return string;
 	}
 
@@ -63,18 +65,17 @@ public class ETHBlockHandle implements BlockHandleApi {
 		return ethBlock.getAddress(pub);
 	}
 
-	
-
 	@Override
 	public Object getTran(long tran_index) {
 		return ethBlock.getBlockByNumber(tran_index);
 	}
-/**
- * eth_blockNumber 最新块
- */
+
+	/**
+	 * eth_blockNumber 最新块
+	 */
 	@Override
 	public long getLastBlock() {
-		return 	ethBlock.blockNumber();
+		return ethBlock.blockNumber();
 	}
 
 }

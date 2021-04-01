@@ -14,11 +14,11 @@ import com.mugui.spring.net.bean.Message;
 import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
+import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
-import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 
 /**
  * token持有证明转出
@@ -202,27 +202,28 @@ public class DGCertTokenOutTask extends TaskImpl {
 		}
 		// 得到已签名数据
 		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), base_num, poll.getToken_1());
+
+		// 无论成功与否都修改为以转出
+		poll.setHash_1(BlockHandleApi.txids.get());
+		BlockHandleApi.txids.remove();
 		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), pri, poll.getUser_address(), poll.getQuotes_num(), poll.getToken_2());
 
 		if (base_msg.getType() != Message.SUCCESS || quote_msg.getType() != Message.SUCCESS) {
 			return;
 		}
-		ContractTransaction con1 = (ContractTransaction) base_msg.getDate();
 		// 无论成功与否都修改为以转出
-		poll.setHash_1(con1.txId);
-		ContractTransaction con2 = (ContractTransaction) quote_msg.getDate();
-		// 无论成功与否都修改为以转出
-		poll.setHash_2(con2.txId);
+		poll.setHash_2(BlockHandleApi.txids.get());
+		BlockHandleApi.txids.remove();
 		poll.get().put("broadcast1", base_msg.getDate());
 		try {
-			Message broadcastTran = blockservice.broadcastTran(poll.getBlock_1(), base_msg.getDate());// 广播
+			blockservice.broadcastTran(poll.getBlock_1(), base_msg.getDate());// 广播
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		poll.get().put("broadcast2", quote_msg.getDate());
 		try {
-			Message broadcastTran = blockservice.broadcastTran(poll.getBlock_2(), quote_msg.getDate());// 广播
+			blockservice.broadcastTran(poll.getBlock_2(), quote_msg.getDate());// 广播
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -237,7 +238,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 	private void broadcastTran(DGKeepBean poll) {
 		add(poll);
 		try {
-			Message broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
+			 blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -251,12 +252,12 @@ public class DGCertTokenOutTask extends TaskImpl {
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
-		ContractTransaction con = (ContractTransaction) sendTran.getDate();
-		poll.setHash_3(con.txId);
+		poll.setHash_3(BlockHandleApi.txids.get());
+		BlockHandleApi.txids.remove();
 		poll.get().put("broadcast", sendTran.getDate());
 		try {
 
-			Message broadcastTran = blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
+			 blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
 			// 无论成功与否都修改为以转出
 		} catch (Exception e) {
 			e.printStackTrace();

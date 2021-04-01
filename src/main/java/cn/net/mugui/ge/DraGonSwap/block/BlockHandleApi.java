@@ -12,6 +12,8 @@ import com.mugui.spring.net.bean.Message;
  */
 public interface BlockHandleApi {
 
+	public static final ThreadLocal<String> txids=new ThreadLocal<>();
+	
 	/**
 	 * 初始化
 	 */
