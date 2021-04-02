@@ -94,6 +94,7 @@ public class DGTransferTask extends TaskImpl {
 				} else {
 					continue;
 				}
+				log.setTo_address(newBean.getRemark());
 				DGPriAddressBean dgPriAddressBean = new DGPriAddressBean().setAddress(blockChainBean.getTo());
 				dgPriAddressBean = dao.select(dgPriAddressBean);
 				if (dgPriAddressBean == null) {
@@ -170,8 +171,8 @@ public class DGTransferTask extends TaskImpl {
 //			BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
 //			log.setTo_num(inBase);
 //			log.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
-
-			log.setTo_address(blockAddress);
+			if (StringUtils.isBlank(log.getTo_address()))
+				log.setTo_address(blockAddress);
 			log.setTo_block(block_name);
 			log.setTo_token(select.getContract_address());
 			log.setTo_token_name(select.getSymbol());
@@ -202,7 +203,8 @@ public class DGTransferTask extends TaskImpl {
 //			log.setTo_num(inQuote);
 //			log.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
 
-			log.setTo_address(blockAddress);
+			if (StringUtils.isBlank(log.getTo_address()))
+				log.setTo_address(blockAddress);
 			log.setTo_block(block_name);
 			log.setTo_token(select.getContract_address());
 			log.setTo_token_name(select.getSymbol());

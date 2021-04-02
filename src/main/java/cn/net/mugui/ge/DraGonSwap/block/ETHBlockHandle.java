@@ -32,7 +32,7 @@ public class ETHBlockHandle implements BlockHandleApi {
 	@Override
 	public Object getSendTran(String pri, String to_address, BigDecimal amount, String token_address) throws Exception {
 		String string = ethBlock.signTran(to_address, pri, amount, token_address, null);
-		txids.set(Hex.toHexString(Hash.sha3(Hex.decode(string.substring(2)))));
+		txids.set("0x"+Hex.toHexString(Hash.sha3(Hex.decode(string.substring(2)))));
 		return string;
 	}
 
