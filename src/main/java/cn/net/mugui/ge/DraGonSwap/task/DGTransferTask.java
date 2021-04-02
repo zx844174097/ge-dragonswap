@@ -94,7 +94,8 @@ public class DGTransferTask extends TaskImpl {
 				} else {
 					continue;
 				}
-				log.setTo_address(newBean.getRemark());
+				if (StringUtils.isNotBlank(newBean.getRemark()) && newBean.getRemark().length() == 34 && newBean.getRemark().startsWith("T"))
+					log.setTo_address(newBean.getRemark());
 				DGPriAddressBean dgPriAddressBean = new DGPriAddressBean().setAddress(blockChainBean.getTo());
 				dgPriAddressBean = dao.select(dgPriAddressBean);
 				if (dgPriAddressBean == null) {
