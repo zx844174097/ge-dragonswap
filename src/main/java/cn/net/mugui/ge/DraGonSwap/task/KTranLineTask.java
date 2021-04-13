@@ -17,6 +17,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.net.mugui.ge.DraGonSwap.bean.DGQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
+import cn.net.mugui.ge.DraGonSwap.count.InAndOutTask;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 
@@ -64,7 +65,7 @@ public class KTranLineTask extends TaskImpl {
 				if (poll == null) {
 					List<DGSymbolBean> selectList = dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1));
 					for (DGSymbolBean dgSymbolBean : selectList) {
-						 newQuotes(i, dgSymbolBean.getSymbol());
+						newQuotes(i, dgSymbolBean.getSymbol());
 					}
 				} else {
 					DGQuotes newQuotes = newQuotes(i, poll.getDg_symbol());
@@ -117,7 +118,7 @@ public class KTranLineTask extends TaskImpl {
 			}
 			String[] split = dgQuotes.getQ_market().split("[/]");
 			dgQuotes.setQ_symbol_l(split[0]);
-			dgQuotes.setQ_symbol_r(split[1]); 
+			dgQuotes.setQ_symbol_r(split[1]);
 			dgQuotes.setQ_amount(BigDecimal.ZERO);
 			dgQuotes.setQ_vol(BigDecimal.ZERO);
 			dgQuotes.setQ_count(0);
@@ -171,8 +172,12 @@ public class KTranLineTask extends TaskImpl {
 		return false;
 	}
 
+	@Autowired
+	InAndOutTask inAndout;
+
 	public void add(DGTranLogBean tranLogBean) {
 		synchronized (this) {
+			inAndout.add(tranLogBean);
 			linkedList.add(tranLogBean);
 			this.notifyAll();
 		}
