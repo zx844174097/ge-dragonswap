@@ -63,7 +63,8 @@ public class SymbolAdmin implements Mugui {
 		if (dao.select(new DGSymbolBean().setSymbol(dcBean.getSymbol())) != null) {
 			return Message.error("该交易对已存在");
 		}
-		if (dao.select(new DGSymbolBean().setSymbol(dcBean.getQuote_currency() + "/" + dcBean.getBase_currency())) != null) {
+		if (dao.select(
+				new DGSymbolBean().setSymbol(dcBean.getQuote_currency() + "/" + dcBean.getBase_currency())) != null) {
 			return Message.error("该交易对已存在");
 		}
 		DGSymbolCreateBean bean = DGSymbolCreateBean.newBean(DGSymbolCreateBean.class, bag.getData());
@@ -188,6 +189,7 @@ public class SymbolAdmin implements Mugui {
 //	}
 	@Autowired
 	private DSymbolManager manager;
+
 	/**
 	 * 交易对列表
 	 * 
@@ -200,7 +202,11 @@ public class SymbolAdmin implements Mugui {
 		for (DGSymbolBean symbolBean : selectList) {
 			JSONObject json = symbolBean.toJson();
 			json.putAll(dao.select(new DGSymbolCreateBean().setDg_symbol_id(symbolBean.getDg_symbol_id())).toJson());
-			json.putAll(dao.select(new DGSymbolDescriptBean().setDg_symbol_id(symbolBean.getDg_symbol_id())).toJson());
+			DGSymbolDescriptBean select = dao
+					.select(new DGSymbolDescriptBean().setDg_symbol_id(symbolBean.getDg_symbol_id()));
+			if (select != null) {
+				json.putAll(select.toJson());
+			}
 			json.putAll(dao.select(new DGSymbolPriBean().setDg_symbol_id(symbolBean.getDg_symbol_id())).toJson());
 			array.add(json);
 		}
