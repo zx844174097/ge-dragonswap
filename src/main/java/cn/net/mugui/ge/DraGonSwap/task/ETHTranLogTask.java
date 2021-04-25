@@ -2,7 +2,6 @@ package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.block.eth.EthBlock;
 
@@ -38,6 +36,7 @@ public class ETHTranLogTask extends DefaultTranLogTask {
 
 	@Override
 	protected List<BlockTranBean> handle(Object tran) {
+		
 		Block block = (Block) tran;
 		List<TransactionResult> transactions = block.getTransactions();
 		List<BlockTranBean> list = new LinkedList<>();
@@ -78,12 +77,5 @@ public class ETHTranLogTask extends DefaultTranLogTask {
 	@Autowired
 	private DGDao dao;
 
-	private HashMap<String, String> map = new HashMap<>();
 
-	private void initListenerAddress() {
-		List<DGPriAddressBean> selectList = dao.selectList(new DGPriAddressBean().setBlock_name(getName()));
-		for (DGPriAddressBean bean : selectList) {
-			map.put(bean.getAddress(), "");
-		}
-	}
 }

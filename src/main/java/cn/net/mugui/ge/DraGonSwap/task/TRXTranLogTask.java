@@ -37,8 +37,10 @@ import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction.Contract;
 public class TRXTranLogTask extends TaskImpl {
 	private static final String TRON_SCAN = "TRX_LOG";
 
-	public ThreadPoolExecutor TRON_SCAN_TASK = ExecutorBuilder.create().setCorePoolSize(10).setWorkQueue(new LinkedBlockingQueue<>()).setMaxPoolSize(10)
-			.setThreadFactory(new NamedThreadFactory(TRON_SCAN, false)).setHandler(RejectPolicy.CALLER_RUNS.getValue()).build();
+	public ThreadPoolExecutor TRON_SCAN_TASK = ExecutorBuilder.create().setCorePoolSize(10)
+			.setWorkQueue(new LinkedBlockingQueue<>()).setMaxPoolSize(10)
+			.setThreadFactory(new NamedThreadFactory(TRON_SCAN, false)).setHandler(RejectPolicy.CALLER_RUNS.getValue())
+			.build();
 
 	@Override
 	public void init() {
@@ -54,10 +56,12 @@ public class TRXTranLogTask extends TaskImpl {
 	private HashMap<String, String> map = new HashMap<>();
 
 	private void initListenerAddress() {
+		HashMap<String, String> map = new HashMap<>();
 		List<DGPriAddressBean> selectList = dao.selectList(new DGPriAddressBean().setBlock_name(getName()));
 		for (DGPriAddressBean bean : selectList) {
 			map.put(bean.getAddress(), "");
 		}
+		this.map = map;
 	}
 
 	TRXBlockHandle blockHandleApi = null;
@@ -175,7 +179,8 @@ public class TRXTranLogTask extends TaskImpl {
 				String string = map.get(to);
 				if (string != null) {
 					BigDecimal t = blockHandleApi.转数额(amount, contractAddress);
-					linkedList.add(new BlockTranBean().setFrom(from).setTo(to).setToken(contractAddress).setNum(t).setHash(event.txId).setBlock(getName()));
+					linkedList.add(new BlockTranBean().setFrom(from).setTo(to).setToken(contractAddress).setNum(t)
+							.setHash(event.txId).setBlock(getName()));
 				}
 			}
 
@@ -191,6 +196,7 @@ public class TRXTranLogTask extends TaskImpl {
 
 	@Autowired
 	private RedisAccess reactor;
+	long time = 0;
 
 	@Override
 	public void run() {
@@ -201,6 +207,10 @@ public class TRXTranLogTask extends TaskImpl {
 				e.printStackTrace();
 			}
 			Other.sleep(1000);
+			if (System.currentTimeMillis() - time > 60000) {
+				initListenerAddress();
+				time = System.currentTimeMillis();
+			}
 		}
 
 	}
@@ -214,7 +224,6 @@ public class TRXTranLogTask extends TaskImpl {
 		if (!Other.isInteger(value)) {
 			return;
 		}
-
 		long lastBlock = blockHandleApi.getLastBlock();
 		if (lastBlock <= Integer.parseInt(value)) {
 			return;
