@@ -92,7 +92,7 @@ public class Symbol implements Mugui {
 			jsonObject.putAll(swapBean.symbol_des.get());
 			jsonObject.put("token_address", swapBean.create.getToken_address());
 
-			DGKeepBean select2 = task.getLastKeepBean();
+			DGKeepBean select2 = task.getLastKeepBean(dgSymbolBean.getSymbol());
 			if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 				jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 			} else {
@@ -171,7 +171,7 @@ public class Symbol implements Mugui {
 //			}
 		}
 
-		DGKeepBean select2 = task.getLastKeepBean();
+		DGKeepBean select2 = task.getLastKeepBean(dgSymbolBean.getSymbol());
 		if (select2 != null && select2.getNow_out_cert_token_num() != null) {
 			jsonObject.put("now_out_cert_token_num", select2.getNow_out_cert_token_num());
 		} else {

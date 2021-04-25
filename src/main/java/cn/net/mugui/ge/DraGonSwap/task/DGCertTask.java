@@ -1,6 +1,7 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -77,7 +78,7 @@ public class DGCertTask extends TaskImpl {
 
 	@Autowired
 	private DGCertRansomTask ransomTask;
-	
+
 	@Value("${isTest:false}")
 	private boolean isTest;
 
@@ -90,7 +91,8 @@ public class DGCertTask extends TaskImpl {
 			if (!Other.isInteger(value)) {
 				return;
 			}
-			List<BlockTranBean> selectList = dao.selectList(BlockTranBean.class, Select.q(new BlockTranBean()).where(Where.q().gt("tran_id", value)));
+			List<BlockTranBean> selectList = dao.selectList(BlockTranBean.class,
+					Select.q(new BlockTranBean()).where(Where.q().gt("tran_id", value)));
 			if (selectList.isEmpty()) {
 				return;
 			}
@@ -109,7 +111,7 @@ public class DGCertTask extends TaskImpl {
 					return;
 				}
 
-				if (!isTest&&ransomTask.handle(blockChainBean, dgSymbol)) {
+				if (!isTest && ransomTask.handle(blockChainBean, dgSymbol)) {
 					continue;
 				}
 				Object redis = redisUtil.getRedis("wait_" + blockChainBean.getHash());
@@ -151,7 +153,8 @@ public class DGCertTask extends TaskImpl {
 			dgKeepBean.setHash_2(blockChainBean.getHash());
 			dgKeepBean.setBlock_2(blockChainBean.getBlock());
 			dgKeepBean.setToken_2(blockChainBean.getToken());
-			if (dao.select(new DGKeepBean().setHash_1(remarkBean.getRemark()).setHash_2(blockChainBean.getHash())) != null) {
+			if (dao.select(
+					new DGKeepBean().setHash_1(remarkBean.getRemark()).setHash_2(blockChainBean.getHash())) != null) {
 				return;
 			}
 			DGSymbolConfBean select5 = dgSymbolConfUtil.getByContract_address(blockChainBean.getToken());
@@ -172,22 +175,25 @@ public class DGCertTask extends TaskImpl {
 			// 判断比例是否正常
 			DGSymbolCreateBean select2 = swapBean.create;
 			if (select2.getBase_init_number().compareTo(BigDecimal.ZERO) <= 0) {// 交易对的第一次入金
-				select2.setBase_init_number(dgKeepBean.getBase_num()).setQuote_init_number(dgKeepBean.getQuotes_num()).setCreate_address(dgKeepBean.getUser_address());
+				select2.setBase_init_number(dgKeepBean.getBase_num()).setQuote_init_number(dgKeepBean.getQuotes_num())
+						.setCreate_address(dgKeepBean.getUser_address());
 				// 初始比例
-				select2.setCreate_init_price(select2.getQuote_init_number().divide(select2.getBase_init_number(), 8, BigDecimal.ROUND_DOWN));
+				select2.setCreate_init_price(
+						select2.getQuote_init_number().divide(select2.getBase_init_number(), 8, BigDecimal.ROUND_DOWN));
 				// 初始总量
 				select2.setTotal_init_number(select2.getQuote_init_number().multiply(select2.getBase_init_number()));
 				dao.updata(select2);
 			}
 
-			DGKeepBean last = getLastKeepBean();
+			DGKeepBean last = getLastKeepBean(dgSymbol.getSymbol());
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal divide2 = null;
 			if (symbol_des.getScale().compareTo(BigDecimal.ZERO) <= 0) {
 				divide2 = dgKeepBean.getQuotes_num().multiply(new BigDecimal("2"));
 			} else {
 				divide2 = symbol_des.getScale().multiply(dgKeepBean.getBase_num()).add(dgKeepBean.getQuotes_num());
-				BigDecimal add = symbol_des.getScale().multiply(symbol_des.getBase_num()).add(symbol_des.getQuote_num());
+				BigDecimal add = symbol_des.getScale().multiply(symbol_des.getBase_num())
+						.add(symbol_des.getQuote_num());
 				divide2 = divide2.divide(add, 18, BigDecimal.ROUND_DOWN).multiply(last.getNow_out_cert_token_num());
 			}
 			divide2 = divide2.setScale(18, BigDecimal.ROUND_DOWN);
@@ -213,7 +219,7 @@ public class DGCertTask extends TaskImpl {
 			// 更新持有总量
 			dgsymbolDes.updateTotal(swapBean, dgKeepBean.getBase_num(), dgKeepBean.getQuotes_num());
 			kCertLineTask.add(dgKeepBean);
-			
+
 			// 转出持有证明token
 			dgCertTokenOutTask.add(dgKeepBean);
 
@@ -229,20 +235,24 @@ public class DGCertTask extends TaskImpl {
 	@Autowired
 	private DSymbolManager manager;
 
-	private DGKeepBean last_keep = null;
+	HashMap<String, DGKeepBean> last_keep = new HashMap<>();
 
-	public synchronized DGKeepBean getLastKeepBean() {
-		if (last_keep == null) {
-			TableMode selectSql = dao.selectSql("SELECT * FROM `dg_keep` WHERE (keep_type=0 AND keep_status>=2)  OR (keep_type=1 ) ORDER BY dg_keep_id DESC LIMIT 1");
-			DGKeepBean dgKeepBean = dao.get(selectSql, 0, DGKeepBean.class);
-			last_keep = dgKeepBean;
+	public synchronized DGKeepBean getLastKeepBean(String string) {
+		DGKeepBean dgKeepBean2 = last_keep.get(string);
+
+		if (dgKeepBean2 == null) {
+			TableMode selectSql = dao.selectSql(
+					"SELECT * FROM `dg_keep` WHERE (keep_type=0 AND keep_status>=2)  OR (keep_type=1 ) and dg_symbol=? ORDER BY dg_keep_id DESC LIMIT 1",
+					string);
+			dgKeepBean2 = dao.get(selectSql, 0, DGKeepBean.class);
+			last_keep.put(string, dgKeepBean2);
 		}
-		return last_keep;
+		return dgKeepBean2;
 
 	}
 
 	public synchronized void setLastKeepBean(DGKeepBean keepBean) {
-		last_keep = keepBean;
+		last_keep.put(keepBean.getDg_symbol(), keepBean);
 	}
 
 }

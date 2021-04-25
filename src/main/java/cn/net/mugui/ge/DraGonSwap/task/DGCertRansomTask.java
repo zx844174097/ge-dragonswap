@@ -60,7 +60,7 @@ public class DGCertRansomTask {
 		dgKeepTranLogBean.setKeep_type(DGKeepBean.keep_type_1);
 		dgKeepTranLogBean.setHash_3(blockChainBean.getHash());
 		dgKeepTranLogBean.setBlock_3(blockChainBean.getBlock());
-		DGKeepBean last_dg_keep = certTask.getLastKeepBean();
+		DGKeepBean last_dg_keep = certTask.getLastKeepBean(dgSymbol.getSymbol());
 		BigDecimal now_out_cert_token_num = last_dg_keep.getNow_out_cert_token_num();
 
 		BigDecimal divide = dgKeepTranLogBean.getToken_num().divide(now_out_cert_token_num, 32, BigDecimal.ROUND_DOWN);
