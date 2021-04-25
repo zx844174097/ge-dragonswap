@@ -11,7 +11,7 @@ host: 127.0.0.1
 nacosurl: ${host}:8848
 nacos: nacos://
 redisurl: ${host}
-mysqlUrl: rm-j6c3c72h35x0t15fp.mysql.rds.aliyuncs.com:3306
+mysqlUrl: rm-j6ck0h1lj7xh3916i.mysql.rds.aliyuncs.com:3306
 mysqlUser: mugui
 mysqlPwd: Huangshen123
 
