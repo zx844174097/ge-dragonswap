@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,7 @@ import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.DraGonSwap.util.AddressBindUtil;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolConfUtil;
 import cn.net.mugui.ge.util.RedisUtil;
+import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 /**
  * DG转账服务
@@ -64,6 +66,9 @@ public class DGTransferTask extends TaskImpl {
 
 	@Autowired
 	private RedisUtil redisUtil;
+	
+	@Reference
+	private InvateFilterServiceApi invateservice;
 
 	private void handle() {
 		while (true) {
@@ -113,6 +118,10 @@ public class DGTransferTask extends TaskImpl {
 				}
 				DGSymbolConfBean select2 = dao.select(new DGSymbolConfBean().setBlock_name(blockChainBean.getBlock()).setContract_address(blockChainBean.getToken()));
 				if (select2 == null) {
+					continue;
+				}
+				boolean b = invateservice.is(blockChainBean.getFrom());
+				if(b) {
 					continue;
 				}
 				try {

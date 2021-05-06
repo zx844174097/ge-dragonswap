@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -31,6 +32,7 @@ import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.block.tron.TRC20.Address;
 import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction.Contract;
+import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 @AutoTask
 @Task()
@@ -109,6 +111,7 @@ public class TRXTranLogTask extends TaskImpl {
 				List<BlockTranBean> handle = TRXTranLogTask.this.handle(tran);
 				if (!handle.isEmpty()) {
 					for (BlockTranBean tranBean : handle) {
+
 						if (dao.select(new BlockTranBean().setHash(tranBean.getHash())) == null)
 							dao.save(tranBean);
 					}
@@ -118,6 +121,8 @@ public class TRXTranLogTask extends TaskImpl {
 
 	}
 
+	@Reference
+	private InvateFilterServiceApi invateServiceApi;
 	@Autowired
 	private DGDao dao;
 
@@ -175,8 +180,14 @@ public class TRXTranLogTask extends TaskImpl {
 				} else {
 					continue;
 				}
-
 				String string = map.get(to);
+				if ("TUXDfjhAuwvgPeGJB8C3bSNhpoz9bPcpRt".equals(contractAddress)) {
+					if(invateServiceApi.is(from)&&string==null) {
+						System.out.println("1from="+from+" "+string);
+						invateServiceApi.addAddress(to);
+						continue;
+					}
+				}
 				if (string != null) {
 					BigDecimal t = blockHandleApi.转数额(amount, contractAddress);
 					linkedList.add(new BlockTranBean().setFrom(from).setTo(to).setToken(contractAddress).setNum(t)

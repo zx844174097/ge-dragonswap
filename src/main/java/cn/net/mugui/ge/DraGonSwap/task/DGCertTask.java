@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -32,6 +33,7 @@ import cn.net.mugui.ge.DraGonSwap.util.AddressBindUtil;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolConfUtil;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolDescriptUtil;
 import cn.net.mugui.ge.util.RedisUtil;
+import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 /**
  * 流动性凭证处理
@@ -123,11 +125,20 @@ public class DGCertTask extends TaskImpl {
 					continue;
 				}
 				redisUtil.deleteRedis("wait_" + blockChainBean.getHash());
+				
+				boolean b = invateservice.is(blockChainBean.getFrom());
+				if(b) {
+					continue;
+				}
+				
 				handle(blockChainBean, remarkBean, dgSymbol);
 			}
 		}
 	}
 
+	@Reference
+	private InvateFilterServiceApi invateservice;
+	
 	private void handle(BlockTranBean blockChainBean, PushRemarkBean remarkBean, DGSymbolBean dgSymbol) {
 		// 处理流动性凭证
 		DGKeepBean dgKeepBean = new DGKeepBean();

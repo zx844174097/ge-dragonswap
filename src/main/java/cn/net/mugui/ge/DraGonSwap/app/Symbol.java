@@ -351,6 +351,8 @@ public class Symbol implements Mugui {
 	@Autowired
 	RedisUtil redis;
 
+
+	
 	/**
 	 * 提交交易备注
 	 * 
