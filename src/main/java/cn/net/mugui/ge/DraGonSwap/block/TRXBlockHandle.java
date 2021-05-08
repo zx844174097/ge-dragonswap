@@ -17,11 +17,13 @@ import com.mugui.spring.net.bean.Message;
 import com.mugui.spring.util.HTTPUtil;
 import com.mugui.util.Other;
 
+import cn.hutool.core.util.HexUtil;
 import cn.net.mugui.ge.block.tron.TRC20.Address;
 import cn.net.mugui.ge.block.tron.TRC20.ApiResult;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Credential;
 import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction;
+import cn.net.mugui.ge.block.tron.TRC20.TransferTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.Trc20;
 import cn.net.mugui.ge.block.tron.TRC20.TronApi;
 import cn.net.mugui.ge.block.tron.TRC20.TronKit;
@@ -64,15 +66,46 @@ public class TRXBlockHandle implements BlockHandleApi {
 			return tokenSignMessage;
 
 		} else {
-			ContractTransaction tokenSignMessage = null;
+			TransferTransaction tokenSignMessage = null;
 			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, tempBean.address);
 			String sign = credential.sign(tokenSignMessage.txId);
 			tokenSignMessage.signature = new String[] { sign };
+			verifySign(tempBean.address, sign, tokenSignMessage.txId, false);
 			txids.set(tokenSignMessage.txId);
 			return tokenSignMessage;
 		}
 	}
+	/**
+	 * 校验签名
+	 * 
+	 * @param address
+	 * @param sign
+	 * @param msg
+	 * @param isSha
+	 * @return
+	 */
+	public  boolean verifySign(String address, String sign, String msg, boolean isSha) {
+		byte[] encode = null;
+		if (!isSha) {
+			encode = Hash.sha3(msg.getBytes());
+		} else {
+			encode = HexUtil.decodeHex(msg);
+		}
+		byte[] decodeHex = HexUtil.decodeHex(sign);
+		byte[] r = new byte[32];
+		System.arraycopy(decodeHex, 0, r, 0, 32);
+		byte[] s = new byte[32];
+		System.arraycopy(decodeHex, 32, s, 0, 32);
+		byte[] v = new byte[1];
+		System.arraycopy(decodeHex, 64, v, 0, 1);
 
+		byte[] recoverPublicKey = Credential.recoverPublicKey(r, s, v, encode);
+		String addressByPub = getAddressByPub(HexUtil.encodeHexStr(recoverPublicKey).substring(2));
+
+		boolean equals = address.equals(addressByPub);
+		System.out.println(addressByPub);
+		return equals;
+	}
 	private TempBean getTempBean(String pri) {
 		TempBean tempBean = map.get(pri);
 		if (tempBean == null) {
