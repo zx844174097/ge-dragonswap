@@ -61,6 +61,7 @@ public class DGCertRansomTask {
 		dgKeepTranLogBean.setHash_3(blockChainBean.getHash());
 		dgKeepTranLogBean.setBlock_3(blockChainBean.getBlock());
 		DGKeepBean last_dg_keep = certTask.getLastKeepBean(dgSymbol.getSymbol());
+		System.out.println("减少流动性"+last_dg_keep);
 		BigDecimal now_out_cert_token_num = last_dg_keep.getNow_out_cert_token_num();
 
 		BigDecimal divide = dgKeepTranLogBean.getToken_num().divide(now_out_cert_token_num, 32, BigDecimal.ROUND_DOWN);
@@ -89,6 +90,7 @@ public class DGCertRansomTask {
 			dgKeepTranLogBean.setKeep_create_time(new Date());
 			dgKeepTranLogBean = dao.save(dgKeepTranLogBean);
 			certTask.setLastKeepBean(dgKeepTranLogBean);
+			System.out.println("减少流动性"+dgKeepTranLogBean);
 			kCertLineTask.add(dgKeepTranLogBean);
 
 			outTask.add(dgKeepTranLogBean);

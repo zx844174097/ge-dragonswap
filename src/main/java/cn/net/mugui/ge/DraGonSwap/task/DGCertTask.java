@@ -125,12 +125,12 @@ public class DGCertTask extends TaskImpl {
 					continue;
 				}
 				redisUtil.deleteRedis("wait_" + blockChainBean.getHash());
-				
+
 				boolean b = invateservice.is(blockChainBean.getFrom());
-				if(b) {
+				if (b) {
 					continue;
 				}
-				
+
 				handle(blockChainBean, remarkBean, dgSymbol);
 			}
 		}
@@ -138,7 +138,7 @@ public class DGCertTask extends TaskImpl {
 
 	@Reference
 	private InvateFilterServiceApi invateservice;
-	
+
 	private void handle(BlockTranBean blockChainBean, PushRemarkBean remarkBean, DGSymbolBean dgSymbol) {
 		// 处理流动性凭证
 		DGKeepBean dgKeepBean = new DGKeepBean();
@@ -197,6 +197,7 @@ public class DGCertTask extends TaskImpl {
 			}
 
 			DGKeepBean last = getLastKeepBean(dgSymbol.getSymbol());
+			System.out.println("增加流动性"+last);
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal divide2 = null;
 			if (symbol_des.getScale().compareTo(BigDecimal.ZERO) <= 0) {
@@ -225,6 +226,7 @@ public class DGCertTask extends TaskImpl {
 			dgKeepBean.setLast_out_cert_token_num(last_big);
 			dgKeepBean.setNow_out_cert_token_num(last_big.add(dgKeepBean.getToken_num()));
 			dgKeepBean.setKeep_status(DGKeepBean.KEEP_STATUS_2);
+			System.out.println("增加流动性"+dgKeepBean);
 			dao.updata(dgKeepBean);
 			setLastKeepBean(dgKeepBean);
 			// 更新持有总量
@@ -256,6 +258,10 @@ public class DGCertTask extends TaskImpl {
 					"SELECT * FROM `dg_keep` WHERE (keep_type=0 AND keep_status>=2)  OR (keep_type=1 ) and dg_symbol=? ORDER BY dg_keep_id DESC LIMIT 1",
 					string);
 			dgKeepBean2 = dao.get(selectSql, 0, DGKeepBean.class);
+			if (dgKeepBean2 == null) {
+				return new DGKeepBean().setDg_symbol(string).setLast_out_cert_token_num(BigDecimal.ZERO)
+						.setNow_out_cert_token_num(BigDecimal.ZERO);
+			}
 			last_keep.put(string, dgKeepBean2);
 		}
 		return dgKeepBean2;
