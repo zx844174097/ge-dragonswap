@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -247,7 +248,7 @@ public class Symbol implements Mugui {
 	@Autowired
 	private BlockService blockService;
 
-	@Autowired
+	@Reference
 	private TronServiceApi tronServiceApi;
 
 	@Autowired
