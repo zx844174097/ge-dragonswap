@@ -252,10 +252,9 @@ public class DGCertTask extends TaskImpl {
 
 	public synchronized DGKeepBean getLastKeepBean(String string) {
 		DGKeepBean dgKeepBean2 = last_keep.get(string);
-
 		if (dgKeepBean2 == null) {
 			TableMode selectSql = dao.selectSql(
-					"SELECT * FROM `dg_keep` WHERE (keep_type=0 AND keep_status>=2)  OR (keep_type=1 ) and dg_symbol=? ORDER BY dg_keep_id DESC LIMIT 1",
+					"SELECT * FROM `dg_keep` WHERE ( (keep_type=0 AND keep_status>=2)  OR (keep_type=1 ) ) and dg_symbol=? ORDER BY dg_keep_id DESC LIMIT 1",
 					string);
 			dgKeepBean2 = dao.get(selectSql, 0, DGKeepBean.class);
 			if (dgKeepBean2 == null) {
