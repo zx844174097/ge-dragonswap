@@ -4,6 +4,8 @@ import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 
 import cn.net.mugui.ge.MuguiApplication;
 import cn.net.mugui.ge.DraGonSwap.block.TRXBlockHandle;
@@ -19,8 +21,14 @@ public class GeDraGonSwapApplication {
 //			System.setProperty("DUBBO_IP_TO_REGISTRY", "113.98.201.156");
 //			System.setProperty("DUBBO_PORT_TO_REGISTRY", 20889 + "");// 指定外网访问端口
 //			System.setProperty("DUBBO_PORT_TO_BIND", 20889 + "");// 指定本地绑定端口
-			MuguiApplication.run(args);
-
+			ApplicationContext run = MuguiApplication.run(args);
+			// 以下为修复阿里服务加载bug
+			Environment bean = (Environment) run.getBean("environment");
+			String property = bean.getProperty("TronApi");
+			if(property!=null) {
+				TRXBlockHandle bean2 = run.getBean(TRXBlockHandle.class);
+				bean2.init(property);
+			}
 //			while(true) {
 //				try {
 //

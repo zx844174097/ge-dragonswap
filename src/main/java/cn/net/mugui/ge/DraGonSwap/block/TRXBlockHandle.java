@@ -43,6 +43,10 @@ public class TRXBlockHandle implements BlockHandleApi {
 
 	private TronApi mainNet = new TronApi();
 
+	public void init(String url) {
+		mainNet.init(url);
+	}
+
 	private HashMap<String, TempBean> map = new HashMap<>();
 
 	private static class TempBean {
@@ -52,7 +56,8 @@ public class TRXBlockHandle implements BlockHandleApi {
 	}
 
 	@Override
-	public Object getSendTran(String pri, String to_address, BigDecimal amount, String contract_address) throws Exception {
+	public Object getSendTran(String pri, String to_address, BigDecimal amount, String contract_address)
+			throws Exception {
 		TempBean tempBean = getTempBean(pri);
 
 		Credential credential = tempBean.credential;
@@ -75,6 +80,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 			return tokenSignMessage;
 		}
 	}
+
 	/**
 	 * 校验签名
 	 * 
@@ -84,7 +90,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 	 * @param isSha
 	 * @return
 	 */
-	public  boolean verifySign(String address, String sign, String msg, boolean isSha) {
+	public boolean verifySign(String address, String sign, String msg, boolean isSha) {
 		byte[] encode = null;
 		if (!isSha) {
 			encode = Hash.sha3(msg.getBytes());
@@ -106,6 +112,7 @@ public class TRXBlockHandle implements BlockHandleApi {
 		System.out.println(addressByPub);
 		return equals;
 	}
+
 	private TempBean getTempBean(String pri) {
 		TempBean tempBean = map.get(pri);
 		if (tempBean == null) {
@@ -189,7 +196,8 @@ public class TRXBlockHandle implements BlockHandleApi {
 		}
 	}
 
-	public TronKit kit = new TronKit(mainNet, Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
+	public TronKit kit = new TronKit(mainNet,
+			Credential.fromPrivateKey("8D9142B97B38F992B4ADF9FB3D0DD527B1F47BE113C6D0B5C32A0571EF1E7B5F"));
 	private HashMap<String, BigInteger> d_map = new HashMap<>();
 
 	public BigDecimal 转数额(BigInteger bigInteger, String contractAddress) {

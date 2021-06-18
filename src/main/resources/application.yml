@@ -7,7 +7,12 @@
 #mysqlUser: root
 #mysqlPwd: mugui123
 
-host: 127.0.0.1
+#//        this("https://block.dragonschain.cn");//main
+#//        this("https://trx.mytokenpocket.vip");//TP
+#    this("https://tron-mainnet.token.im");// MToken
+#//    this("https://api.trongrid.io");
+TronApi: tron-mainnet.token.im
+host: 127.0.0.1 
 nacosurl: ${host}:8848
 nacos: nacos://
 redisurl: ${host}
