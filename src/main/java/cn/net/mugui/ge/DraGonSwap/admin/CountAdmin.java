@@ -74,7 +74,7 @@ public class CountAdmin implements Mugui {
 		}
 		Select where = Select.q(
 				" symbol, address, sum(base_in) as base_in ,sum(base_out) as base_out,sum(base_diff) as base_diff,sum(quote_in)  as quote_in,sum(quote_out) as quote_out,sum(quote_diff) as quote_diff ",
-				bean).where(Where.q(bean).ne("address", "TEWgz9NQp9S1H3B4fefhqjFJrGLFaBKyhe").ne("address", "TDG6CEjscmbWJfPBzYw4WRWXVtw2NGEYHx").between("create_time", DateUtil.formatDateTime(offsetDay), DateUtil.now()).groupBy("address"));
+				bean).where(Where.q(bean).between("create_time", DateUtil.formatDateTime(offsetDay), DateUtil.now()).groupBy("address"));
 		return Message.ok(dao.selectArray(InAndOutBean.class, where));
 	}
 
