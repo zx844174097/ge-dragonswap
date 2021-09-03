@@ -1,11 +1,13 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
@@ -40,7 +42,21 @@ public class DGCertTokenOutTask extends TaskImpl {
 		linkedList.addAll(selectList);
 
 	}
-
+	@Scheduled(cron = "0 0/2 * * * ? ")
+	public synchronized void retryRun() {
+		List<DGKeepBean> selectList = dao.selectList(new DGKeepBean().setKeep_status(8));
+		for (DGKeepBean bean : selectList) {
+			if (bean.getKeep_type() == DGKeepBean.keep_type_0) {
+				bean.setKeep_status(DGKeepBean.KEEP_STATUS_2);
+			}else 
+			if (bean.getKeep_type() == DGKeepBean.keep_type_1) {
+				bean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
+			}
+			bean.setKeep_create_time(new Date());
+			dao.updata(bean);
+			add(bean);
+		}
+	}
 	@Override
 	public void run() {
 		while (true) {

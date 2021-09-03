@@ -1,9 +1,11 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.mugui.spring.TaskImpl;
@@ -34,6 +36,18 @@ public class DGTransferTokenOutTask extends TaskImpl {
 		super.init();
 		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_1)));
 //		linkedList.addAll(dao.selectList(new DGTranLogBean().setLog_status(DGTranLogBean.log_status_2)));
+		retryRun();
+	}
+
+	@Scheduled(cron = "0 0/2 * * * ? ")
+	public synchronized void retryRun() {
+		List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(6));
+		for (DGTranLogBean bean : selectList) {
+			bean.setLog_status(DGTranLogBean.log_status_1);
+			bean.setTran_log_create_time(new Date());
+			dao.updata(bean);
+			add(bean);
+		}
 	}
 
 	@Override
@@ -111,7 +125,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
 		try {
-			 blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
+			blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -121,7 +135,9 @@ public class DGTransferTokenOutTask extends TaskImpl {
 	private void send(DGTranLogBean poll) {
 		add(poll);
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getTo_block(), manager.get(poll.getDg_symbol()).pri_cert.getPri(), poll.getTo_address(), poll.getTo_num(), poll.getTo_token());
+		Message sendTran = blockservice.getSendTran(poll.getTo_block(),
+				manager.get(poll.getDg_symbol()).pri_cert.getPri(), poll.getTo_address(), poll.getTo_num(),
+				poll.getTo_token());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
@@ -129,7 +145,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 		// 无论成功与否都修改为以转出
 		poll.setTo_hash(BlockHandleApi.txids.get());
 		try {
-			 blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
+			blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
