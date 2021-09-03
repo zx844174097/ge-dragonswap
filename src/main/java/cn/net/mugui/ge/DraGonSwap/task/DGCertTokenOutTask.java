@@ -40,7 +40,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 //		linkedList.addAll(selectList);
 		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_0).setKeep_type(DGKeepBean.keep_type_1));
 		linkedList.addAll(selectList);
-
+		retryRun();
 	}
 	@Scheduled(cron = "0 0/2 * * * ? ")
 	public synchronized void retryRun() {
