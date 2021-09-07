@@ -29,6 +29,7 @@ public class GeDraGonSwapApplication {
 				TRXBlockHandle bean2 = run.getBean(TRXBlockHandle.class);
 				bean2.init(property);
 			}
+			
 //			while(true) {
 //				try {
 //

@@ -138,6 +138,7 @@ public class Symbol implements Mugui {
 
 		PageUtil.offsetPage(bag);
 		DGKeepBean newBean = DGKeepBean.newBean(DGKeepBean.class, bag.getData());
+		newBean.setDg_symbol(newBean.get().getString("symbol"));
 		JSONArray selectArrayDESC = dao.selectArrayDESC(newBean);
 		Integer count = dao.count(newBean);
 		return Message.ok(selectArrayDESC).setExtra(count + "");
