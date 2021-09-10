@@ -34,22 +34,24 @@ public class DGCertTokenOutTask extends TaskImpl {
 	@Override
 	public void init() {
 		super.init();
-		List<DGKeepBean> selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_2).setKeep_type(DGKeepBean.keep_type_0));
+		List<DGKeepBean> selectList = dao.selectList(
+				new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_2).setKeep_type(DGKeepBean.keep_type_0));
 		linkedList.addAll(selectList);
 //		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_3).setKeep_type(DGKeepBean.keep_type_0));
 //		linkedList.addAll(selectList);
-		selectList = dao.selectList(new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_0).setKeep_type(DGKeepBean.keep_type_1));
+		selectList = dao.selectList(
+				new DGKeepBean().setKeep_status(DGKeepBean.KEEP_STATUS_0).setKeep_type(DGKeepBean.keep_type_1));
 		linkedList.addAll(selectList);
 		retryRun();
 	}
+
 	@Scheduled(cron = "0 0/2 * * * ? ")
 	public synchronized void retryRun() {
 		List<DGKeepBean> selectList = dao.selectList(new DGKeepBean().setKeep_status(8));
 		for (DGKeepBean bean : selectList) {
 			if (bean.getKeep_type() == DGKeepBean.keep_type_0) {
 				bean.setKeep_status(DGKeepBean.KEEP_STATUS_2);
-			}else 
-			if (bean.getKeep_type() == DGKeepBean.keep_type_1) {
+			} else if (bean.getKeep_type() == DGKeepBean.keep_type_1) {
 				bean.setKeep_status(DGKeepBean.KEEP_STATUS_0);
 			}
 			bean.setKeep_create_time(new Date());
@@ -57,6 +59,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 			add(bean);
 		}
 	}
+
 	@Override
 	public void run() {
 		while (true) {
@@ -118,6 +121,13 @@ public class DGCertTokenOutTask extends TaskImpl {
 					break;
 				}
 			} else if (poll.getKeep_type() == DGKeepBean.keep_type_1) {
+				if (poll.getBase_num().compareTo(BigDecimal.ZERO) <= 0
+						|| poll.getQuotes_num().compareTo(BigDecimal.ZERO) <= 0) {
+					poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
+					poll.setKeep_type(DGKeepBean.keep_type_3);
+					dao.updata(poll);
+					continue;
+				}
 				switch (poll.getKeep_status()) {
 				case DGKeepBean.KEEP_STATUS_0:
 					sendFunds(poll);
@@ -177,7 +187,8 @@ public class DGCertTokenOutTask extends TaskImpl {
 	 * @return
 	 */
 	private boolean isSucessFunds(DGKeepBean poll) {
-		return blockservice.isSucess(poll.getBlock_1(), poll.getHash_1()) && blockservice.isSucess(poll.getBlock_2(), poll.getHash_2());
+		return blockservice.isSucess(poll.getBlock_1(), poll.getHash_1())
+				&& blockservice.isSucess(poll.getBlock_2(), poll.getHash_2());
 	}
 
 	@Autowired
@@ -212,17 +223,20 @@ public class DGCertTokenOutTask extends TaskImpl {
 					base_num = new BigDecimal("0.000000001");
 				} else {
 					base_num = subtract2;
-				} 
-				conf.setValue("error_back_dc_num", new BigDecimal(value2).add(poll.getBase_num().subtract(base_num)).stripTrailingZeros().toPlainString());
+				}
+				conf.setValue("error_back_dc_num", new BigDecimal(value2).add(poll.getBase_num().subtract(base_num))
+						.stripTrailingZeros().toPlainString());
 			}
 		}
 		// 得到已签名数据
-		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), base_num, poll.getToken_1());
+		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), base_num,
+				poll.getToken_1());
 
 		// 无论成功与否都修改为以转出
 		poll.setHash_1(BlockHandleApi.txids.get());
 		BlockHandleApi.txids.remove();
-		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), pri, poll.getUser_address(), poll.getQuotes_num(), poll.getToken_2());
+		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), pri, poll.getUser_address(),
+				poll.getQuotes_num(), poll.getToken_2());
 
 		if (base_msg.getType() != Message.SUCCESS || quote_msg.getType() != Message.SUCCESS) {
 			return;
@@ -254,7 +268,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 	private void broadcastTran(DGKeepBean poll) {
 		add(poll);
 		try {
-			 blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
+			blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -264,7 +278,9 @@ public class DGCertTokenOutTask extends TaskImpl {
 	private void send(DGKeepBean poll) {
 		add(poll);
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getBlock_3(), manager.get(poll.getDg_symbol()).pri_tran.getPri(), poll.getUser_address(), poll.getToken_num(), poll.getToken_3());
+		Message sendTran = blockservice.getSendTran(poll.getBlock_3(),
+				manager.get(poll.getDg_symbol()).pri_tran.getPri(), poll.getUser_address(), poll.getToken_num(),
+				poll.getToken_3());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
@@ -273,7 +289,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 		poll.get().put("broadcast", sendTran.getDate());
 		try {
 
-			 blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
+			blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
 			// 无论成功与否都修改为以转出
 		} catch (Exception e) {
 			e.printStackTrace();
