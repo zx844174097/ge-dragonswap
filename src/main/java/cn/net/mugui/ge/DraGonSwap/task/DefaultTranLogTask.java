@@ -3,7 +3,6 @@ package cn.net.mugui.ge.DraGonSwap.task;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +31,6 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 	@Autowired
 	private DGDao dao;
 
-	ThreadPoolExecutor build = ThreadUtil.newExecutor(1, 5);
 	private TempRunnable[] tempRunnables = null;
 	long time = 0;
 	BlockHandleApi blockHandleApi = null;
@@ -45,7 +43,7 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 		tempRunnables = new TempRunnable[5];
 		for (int i = 0; i < tempRunnables.length; i++) {
 			tempRunnables[i] = new TempRunnable(blockHandleApi);
-			build.execute(tempRunnables[i]);
+			ThreadUtil.execAsync(tempRunnables[i]);
 		}
 
 	}
@@ -103,6 +101,7 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 
 		@Override
 		public void run() {
+			Thread.currentThread().setName("Thread-" + getName());
 			while (true) {
 				try {
 					Integer poll = integers.poll();
