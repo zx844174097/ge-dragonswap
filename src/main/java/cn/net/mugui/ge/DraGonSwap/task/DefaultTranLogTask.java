@@ -42,7 +42,7 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 		BlockHandleApi blockHandleApi = blockManager.get(getName());
 		String value = conf.getValue(getName() + "_tran_log_index");
 		if (value == null) {
-			conf.save(getName() + "_tran_log_index", value = "12023208", getName() + "区块交易扫描id");
+			conf.save(getName() + "_tran_log_index", value = "0", getName() + "区块交易扫描id");
 		}
 		if (!Other.isInteger(value)) {
 			return;
