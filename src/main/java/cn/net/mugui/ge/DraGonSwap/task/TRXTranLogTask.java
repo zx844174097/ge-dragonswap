@@ -183,12 +183,16 @@ public class TRXTranLogTask extends TaskImpl {
 					continue;
 				}
 				String string = map.get(to);
-				if ("TUXDfjhAuwvgPeGJB8C3bSNhpoz9bPcpRt".equals(contractAddress)) {
-					if (invateServiceApi.is(from) && string == null) {
-						System.out.println("1from=" + from + " " + string);
-						invateServiceApi.addAddress(to);
-						continue;
+				try {
+					if ("TUXDfjhAuwvgPeGJB8C3bSNhpoz9bPcpRt".equals(contractAddress)) {
+						if (invateServiceApi.is(from) && string == null) {
+							System.out.println("1from=" + from + " " + string);
+							invateServiceApi.addAddress(to);
+							continue;
+						}
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				if (string != null) {
 					BigDecimal t = blockHandleApi.转数额(amount, contractAddress);

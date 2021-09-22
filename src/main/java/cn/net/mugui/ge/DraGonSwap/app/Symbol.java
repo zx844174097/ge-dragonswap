@@ -80,7 +80,8 @@ public class Symbol implements Mugui {
 		if (StringUtils.isBlank(usdt_quotes_cert_limit)) {
 			conf.save("USDT_cert_limit", usdt_quotes_cert_limit = "100", "usdt流动性入金限制");
 		}
-		for (DGSymbolBean dgSymbolBean : dao.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
+		for (DGSymbolBean dgSymbolBean : dao
+				.selectList(new DGSymbolBean().setSymbol_status(DGSymbolBean.SYMBOL_STATUS_1))) {
 			JSONObject jsonObject = dgSymbolBean.get();
 
 			JSONArray select = dao.selectArray(new DGSymbolConfBean().setSymbol(dgSymbolBean.getBase_currency()));
@@ -165,7 +166,8 @@ public class Symbol implements Mugui {
 		jsonObject.putAll(swapBean.symbol_des.get());
 		DGQuotes setQ_type = new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4);
 //		DGQuotes select = dao.select(new DGQuotes().setQ_market(dgSymbolBean.getSymbol()).setQ_type(4));
-		List<DGQuotes> selectList = dao.selectList(DGQuotes.class, Select.q(setQ_type).where(Where.q(setQ_type).orderByDESCKeyId(setQ_type).limit(1)));
+		List<DGQuotes> selectList = dao.selectList(DGQuotes.class,
+				Select.q(setQ_type).where(Where.q(setQ_type).orderByDESCKeyId(setQ_type).limit(1)));
 		if (!selectList.isEmpty()) {
 			jsonObject.putAll(selectList.get(0).toJson());
 //			if(selectList.size()==2) {
@@ -278,7 +280,8 @@ public class Symbol implements Mugui {
 		dgAddressBindBean.setPub(pub);
 		if (dao.select(dgAddressBindBean) == null) {
 			dgAddressBindBean.setBlock_name("Tron");
-			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(), dgAddressBindBean.getPub().substring(2));
+			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(),
+					dgAddressBindBean.getPub().substring(2));
 			dgAddressBindBean.setAddress(addressByPub);
 			dgAddressBindBean.setDatum_address(addressByPub);
 			dgAddressBindBean = dao.save(dgAddressBindBean);
@@ -323,7 +326,8 @@ public class Symbol implements Mugui {
 		dgAddressBindBean.setPub(public_key_eth);
 		if (dao.select(dgAddressBindBean) == null) {
 			dgAddressBindBean.setBlock_name("Tron");
-			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(), dgAddressBindBean.getPub().substring(2));
+			String addressByPub = blockService.getAddressByPub(dgAddressBindBean.getBlock_name(),
+					dgAddressBindBean.getPub().substring(2));
 			dgAddressBindBean.setAddress(addressByPub);
 			dgAddressBindBean.setDatum_address(addressByPub);
 			dgAddressBindBean = dao.save(dgAddressBindBean);
@@ -335,9 +339,16 @@ public class Symbol implements Mugui {
 			ETH.setAddress(addressByPub);
 			ETH.setDatum_address(dgAddressBindBean.getAddress());
 			ETH = dao.save(ETH);
+			
+			DGAddressBindBean DC = new DGAddressBindBean();
+			DC.setPub(public_key_eth);
+			DC.setBlock_name("DC");
+			addressByPub = blockService.getAddressByPub(DC.getBlock_name(), DC.getPub().substring(2));
+			DC.setAddress(addressByPub);
+			DC.setDatum_address(dgAddressBindBean.getAddress());
+			DC = dao.save(DC);
 
 		}
-
 		DGAddressBindBean BTC = new DGAddressBindBean();
 		BTC.setPub(public_key_btc);
 		if (dao.select(BTC) == null) {
@@ -353,8 +364,6 @@ public class Symbol implements Mugui {
 	@Autowired
 	RedisUtil redis;
 
-
-	
 	/**
 	 * 提交交易备注
 	 * 

@@ -124,17 +124,22 @@ public class DGTransferTask extends TaskImpl {
 				if (select2 == null) {
 					continue;
 				}
-				String from = blockChainBean.getFrom();
-				if (from.equals("TPxTEs1UboNxm9vFnQHnCexMS6nrtGP4s4")
-						|| from.equals("TUSdnPraJpnyJ9mhND9KCyAsTydTE7QW2H")
-						|| from.equals("TPxTEs1UboNxm9vFnQHnCexMS6nrtGP4s4")
-						|| from.equals("TUSdnPraJpnyJ9mhND9KCyAsTydTE7QW2H")) {
-				} else {
-					boolean b = invateservice.is(blockChainBean.getFrom());
-					if (b) {
-						continue;
+				try {
+					String from = blockChainBean.getFrom();
+					if (from.equals("TPxTEs1UboNxm9vFnQHnCexMS6nrtGP4s4")
+							|| from.equals("TUSdnPraJpnyJ9mhND9KCyAsTydTE7QW2H")
+							|| from.equals("TPxTEs1UboNxm9vFnQHnCexMS6nrtGP4s4")
+							|| from.equals("TUSdnPraJpnyJ9mhND9KCyAsTydTE7QW2H")) {
+					} else {
+						boolean b = invateservice.is(blockChainBean.getFrom());
+						if (b) {
+							continue;
+						}
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+				
 				try {
 					dao.getSqlServer().setAutoCommit(false);
 					handle(blockChainBean, log, dgSymbol, select2);

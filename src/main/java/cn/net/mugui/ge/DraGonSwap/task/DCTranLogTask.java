@@ -18,7 +18,7 @@ import cn.net.mugui.ge.block.tron.TRC20.Address;
 import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 @AutoTask
-@Task(blank = 1000 * 10, value = Task.CYCLE)
+@Task(blank = 500, value = Task.CYCLE)
 public class DCTranLogTask extends DefaultTranLogTask {
 	@Override
 	public void init() {

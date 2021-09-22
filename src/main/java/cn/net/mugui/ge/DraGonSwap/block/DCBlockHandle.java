@@ -3,6 +3,7 @@ package cn.net.mugui.ge.DraGonSwap.block;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.Base58;
@@ -13,7 +14,6 @@ import org.web3j.crypto.Hash;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mugui.spring.net.bean.Message;
-import com.mugui.spring.util.HTTPUtil;
 import com.mugui.util.Other;
 
 import cn.hutool.core.util.HexUtil;
@@ -133,17 +133,15 @@ public class DCBlockHandle implements BlockHandleApi {
 	}
 
 	@Override
-	public boolean isSucess(String hash) {
-		String url = "https://api.trongrid.io/wallet/gettransactionbyid";
-		JSONObject jsonObject = new JSONObject();
-		if (StringUtils.isNoneBlank(hash)) {
-			jsonObject.put("value", hash);
-			jsonObject.put("visible", true);
-		}
-		String post = HTTPUtil.post(url, jsonObject.toJSONString());
-		JSONObject jsonObject1 = JSONObject.parseObject(post);
+	public boolean isSucess(String hash) throws Exception {
+		Map transformById;
+		transformById = mainNet.getTransformById(hash);
+		JSONObject jsonObject1 = JSONObject.parseObject(JSONObject.toJSONString(transformById));
 		JSONArray ret = jsonObject1.getJSONArray("ret");
 		if (ret == null) {
+			if(jsonObject1.getString("txID").equals(hash)) {
+				return true;
+			}
 			return false;
 		}
 		JSONObject o = (JSONObject) ret.get(0);
@@ -152,6 +150,7 @@ public class DCBlockHandle implements BlockHandleApi {
 			return true;
 		}
 		throw new RuntimeException("交易失败，余额或能量不足" + hash);
+
 	}
 
 	@Override
