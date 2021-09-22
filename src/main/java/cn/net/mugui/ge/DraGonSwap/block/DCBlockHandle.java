@@ -3,7 +3,6 @@ package cn.net.mugui.ge.DraGonSwap.block;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.Base58;
@@ -24,7 +23,6 @@ import cn.net.mugui.ge.block.dc.DRC20.DCApi;
 import cn.net.mugui.ge.block.dc.DRC20.Trc20;
 import cn.net.mugui.ge.block.dc.DRC20.TronKit;
 import cn.net.mugui.ge.block.tron.TRC20.ApiResult;
-import cn.net.mugui.ge.block.tron.TRC20.ContractEvent;
 import cn.net.mugui.ge.block.tron.TRC20.ContractTransaction;
 import cn.net.mugui.ge.block.tron.TRC20.TransferTransaction;
 
@@ -177,7 +175,7 @@ public class DCBlockHandle implements BlockHandleApi {
 	@Override
 	public Object getTran(long tran_index) {
 		try {
-			List<ContractEvent> blockEvents = mainNet.getBlockEvents(tran_index);
+			JSONArray blockEvents = mainNet.getBlockEvents(tran_index);
 			return blockEvents;
 		} catch (Exception e) {
 			e.printStackTrace();

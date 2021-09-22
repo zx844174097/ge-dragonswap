@@ -2,11 +2,13 @@ package cn.net.mugui.ge.DraGonSwap.task;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.mugui.spring.TaskImpl;
+import com.mugui.sql.SqlServer;
 import com.mugui.util.Other;
 
 import cn.hutool.core.thread.ThreadUtil;
@@ -31,15 +33,29 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 	private DGDao dao;
 
 	ThreadPoolExecutor build = ThreadUtil.newExecutor(1, 5);
-	
-	long time=0;
+	private TempRunnable[] tempRunnables = null;
+	long time = 0;
+	BlockHandleApi blockHandleApi = null;
+
+	@Override
+	public void init() {
+		super.init();
+
+		blockHandleApi = blockManager.get(getName());
+		tempRunnables = new TempRunnable[5];
+		for (int i = 0; i < tempRunnables.length; i++) {
+			tempRunnables[i] = new TempRunnable(blockHandleApi);
+			build.execute(tempRunnables[i]);
+		}
+
+	}
+
 	@Override
 	public void run() {
 		if (System.currentTimeMillis() - time > 60000) {
 			initListenerAddress();
 			time = System.currentTimeMillis();
 		}
-		BlockHandleApi blockHandleApi = blockManager.get(getName());
 		String value = conf.getValue(getName() + "_tran_log_index");
 		if (value == null) {
 			conf.save(getName() + "_tran_log_index", value = "0", getName() + "区块交易扫描id");
@@ -47,13 +63,11 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 		if (!Other.isInteger(value)) {
 			return;
 		}
+
 		long lastBlock = blockHandleApi.getLastBlock();
 		if (lastBlock > Integer.parseInt(value)) {
 			for (int i = Integer.parseInt(value) + 1; i <= lastBlock; i++) {
-				if (build.getActiveCount() == build.getMaximumPoolSize()) {
-					return;
-				}
-				build.execute(new TempRunnable(i, blockHandleApi));
+				tempRunnables[i % 5].add(i);
 				conf.setValue(getName() + "_tran_log_index", i + "");
 			}
 		}
@@ -71,16 +85,46 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 	}
 
 	private class TempRunnable implements Runnable {
-		private Integer i;
+
+		ConcurrentLinkedDeque<Integer> integers = new ConcurrentLinkedDeque<>();
+
 		BlockHandleApi blockHandleApi;
 
-		TempRunnable(Integer i, BlockHandleApi blockHandleApi) {
-			this.i = i;
+		TempRunnable(BlockHandleApi blockHandleApi) {
 			this.blockHandleApi = blockHandleApi;
+		}
+
+		public void add(Integer i) {
+			synchronized (integers) {
+				integers.add(i);
+				integers.notifyAll();
+			}
 		}
 
 		@Override
 		public void run() {
+			while (true) {
+				try {
+					Integer poll = integers.poll();
+					if (poll == null) {
+						synchronized (integers) {
+							poll = integers.poll();
+							if (poll == null) {
+								integers.wait();
+								continue;
+							}
+						}
+					}
+					Run(poll);
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					SqlServer.reback();
+				}
+			}
+		}
+
+		private void Run(Integer i) {
 			Object tran = null;
 			do {
 				tran = blockHandleApi.getTran(i);

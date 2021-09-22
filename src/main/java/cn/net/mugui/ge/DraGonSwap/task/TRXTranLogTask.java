@@ -16,6 +16,7 @@ import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.util.RedisAccess;
+import com.mugui.sql.SqlServer;
 import com.mugui.util.Other;
 
 import cn.hutool.core.thread.ExecutorBuilder;
@@ -85,6 +86,7 @@ public class TRXTranLogTask extends TaskImpl {
 					e.printStackTrace();
 				}
 				Other.sleep(1000);
+				SqlServer.reback();
 			}
 
 		}

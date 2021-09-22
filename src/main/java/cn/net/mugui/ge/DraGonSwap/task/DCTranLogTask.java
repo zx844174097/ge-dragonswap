@@ -1,13 +1,13 @@
 package cn.net.mugui.ge.DraGonSwap.task;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.fastjson.JSONArray;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 
@@ -15,8 +15,6 @@ import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.block.eth.EthBlock;
 import cn.net.mugui.ge.block.tron.TRC20.Address;
-import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction;
-import cn.net.mugui.ge.block.tron.TRC20.DeployContractTransaction.Contract;
 import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 @AutoTask
@@ -46,30 +44,15 @@ public class DCTranLogTask extends DefaultTranLogTask {
 		if (tran == null) {
 			return linkedList;
 		}
-		List<DeployContractTransaction> blockEvents = (List<DeployContractTransaction>) tran;
-		for (DeployContractTransaction event : blockEvents) {
-			Contract[] clone = event.rawData.contract;
-			for (Contract contract : clone) {
-				String from = null;
-				String to = null;
-				BigInteger amount = null;
-				String contractAddress = null;
-				DeployContractTransaction.Value value = contract.parameter.value;
-				if (contract.type.equals("TransferContract")) {// 普通转账
-					amount = new BigInteger(value.amount + "");
-					from = toBase58(value.ownerAddress);
-					to = toBase58(value.toAddress);
-				} else {
-					continue;
-				}
-				String string = map.get(to);
-				if (string != null) {
-					BigDecimal t = new BigDecimal(amount).divide(new BigDecimal("1e6"), 6, BigDecimal.ROUND_DOWN);
-					linkedList.add(new BlockTranBean().setFrom(from).setTo(to).setToken(contractAddress).setNum(t)
-							.setHash(event.txId).setBlock(getName()));
-				}
-			}
+		JSONArray blockEvents = (JSONArray) tran;
 
+		Iterator<Object> iterator = blockEvents.iterator();
+		while (iterator.hasNext()) {
+			Object next = iterator.next();
+			AccountsTransactionsBean newBean = AccountsTransactionsBean.newBean(AccountsTransactionsBean.class, next);
+			linkedList.add(new BlockTranBean().setFrom(newBean.getFrom_address()).setTo(newBean.getTo_address())
+					.setToken(newBean.getToken_contract()).setNum(newBean.getNum()).setHash(newBean.getHash())
+					.setBlock(getName()));
 		}
 		return linkedList;
 	}
