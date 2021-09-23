@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,9 +51,11 @@ public class DCTranLogTask extends DefaultTranLogTask {
 		while (iterator.hasNext()) {
 			Object next = iterator.next();
 			AccountsTransactionsBean newBean = AccountsTransactionsBean.newBean(AccountsTransactionsBean.class, next);
-			linkedList.add(new BlockTranBean().setFrom(newBean.getFrom_address()).setTo(newBean.getTo_address())
-					.setToken(newBean.getToken_contract()).setNum(newBean.getNum()).setHash(newBean.getHash())
-					.setBlock(getName()));
+			if (StringUtils.isBlank(newBean.getToken_contract())) {
+				linkedList.add(new BlockTranBean().setFrom(newBean.getFrom_address()).setTo(newBean.getTo_address())
+						.setToken(newBean.getToken_contract()).setNum(newBean.getNum()).setHash(newBean.getHash())
+						.setBlock(getName()));
+			}
 		}
 		return linkedList;
 	}
