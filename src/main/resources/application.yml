@@ -1,24 +1,24 @@
-nacosurl: 113.98.201.156:8848
-nacos: nacos://
-redisurl: 192.168.0.103
-redisport: 6379
-mysqlUrl: 192.168.0.103:3306
-isTest: true
-mysqlUser: root
-mysqlPwd: mugui123
+#nacosurl: 113.98.201.156:8848
+#nacos: nacos://
+#redisurl: 192.168.0.103
+#redisport: 6379
+#mysqlUrl: 192.168.0.103:3306 
+#isTest: true
+#mysqlUser: root
+#mysqlPwd: mugui123
 
 #//        this("https://block.dragonschain.cn");//main
 #//        this("https://trx.mytokenpocket.vip");//TP
 #    this("https://tron-mainnet.token.im");// MToken
 #//    this("https://api.trongrid.io");
 TronApi: https://api.trongrid.io
-#host: 127.0.0.1 
-#nacosurl: ${host}:8848
-#nacos: nacos://
-#redisurl: ${host}
-#mysqlUrl: rm-j6ck0h1lj7xh3916i.mysql.rds.aliyuncs.com:3306
-#mysqlUser: mugui
-#mysqlPwd: Huangshen123
+host: 127.0.0.1 
+nacosurl: ${host}:8848
+nacos: nacos://
+redisurl: ${host}
+mysqlUrl: rm-j6ck0h1lj7xh3916i.mysql.rds.aliyuncs.com:3306
+mysqlUser: mugui
+mysqlPwd: Huangshen123
 
 dbName: dg
 server:

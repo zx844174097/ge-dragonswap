@@ -56,6 +56,10 @@ public class DCBlockHandle implements BlockHandleApi {
 	@Override
 	public Object getSendTran(String pri, String to_address, BigDecimal amount, String contract_address)
 			throws Exception {
+
+		String decode = "1f" + Address.decode(to_address).substring(2);
+		to_address = Address.encode(decode);
+
 		TempBean tempBean = getTempBean(pri);
 
 		Credential credential = tempBean.credential;
@@ -139,7 +143,7 @@ public class DCBlockHandle implements BlockHandleApi {
 		JSONObject jsonObject1 = JSONObject.parseObject(JSONObject.toJSONString(transformById));
 		JSONArray ret = jsonObject1.getJSONArray("ret");
 		if (ret == null) {
-			if(jsonObject1.getString("txID").equals(hash)) {
+			if (jsonObject1.getString("txID").equals(hash)) {
 				return true;
 			}
 			return false;

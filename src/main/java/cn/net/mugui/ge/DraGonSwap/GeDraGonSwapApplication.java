@@ -18,9 +18,9 @@ public class GeDraGonSwapApplication {
 
 	public static void main(String[] args) {
 		try {
-			System.setProperty("DUBBO_IP_TO_REGISTRY", "113.98.201.156");
-			System.setProperty("DUBBO_PORT_TO_REGISTRY", 20889 + "");// 指定外网访问端口
-			System.setProperty("DUBBO_PORT_TO_BIND", 20889 + "");// 指定本地绑定端口
+//			System.setProperty("DUBBO_IP_TO_REGISTRY", "113.98.201.156");
+//			System.setProperty("DUBBO_PORT_TO_REGISTRY", 20889 + "");// 指定外网访问端口
+//			System.setProperty("DUBBO_PORT_TO_BIND", 20889 + "");// 指定本地绑定端口
 			ApplicationContext run = MuguiApplication.run(args);
 			// 以下为修复阿里服务加载bug
 			Environment bean = (Environment) run.getBean("environment");
