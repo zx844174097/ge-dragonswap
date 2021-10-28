@@ -14,6 +14,7 @@ public class DGSymbolConfUtil {
 	private DGDao dao;
 
 	TimedCache<String, DGSymbolConfBean> newTimedCache = new TimedCache<String, DGSymbolConfBean>(60000);
+	
 
 	public DGSymbolConfBean get(String symbol) {
 		DGSymbolConfBean dgSymbolConfBean = newTimedCache.get(symbol);

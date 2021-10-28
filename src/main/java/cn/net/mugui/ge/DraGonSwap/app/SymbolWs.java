@@ -36,7 +36,9 @@ public class SymbolWs implements Mugui {
 	private DGDao dao;
 
 	private TimedCache<String, Integer> quotes_Cache = CacheUtil.newTimedCache(60000);
-
+	{
+		quotes_Cache.schedulePrune(60000); 
+	}
 //	private static class TempBean {
 //		Integer quotes_id;
 //

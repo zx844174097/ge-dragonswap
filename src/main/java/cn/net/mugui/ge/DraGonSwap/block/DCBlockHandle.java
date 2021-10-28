@@ -130,7 +130,7 @@ public class DCBlockHandle implements BlockHandleApi {
 		byte[] hash0 = Hash.sha256(input);
 		byte[] hash1 = Hash.sha256(hash0);
 		byte[] inputCheck = new byte[input.length + 4 + 1];
-		System.arraycopy(Hex.decode("41"), 0, inputCheck, 0, 1);
+		System.arraycopy(Hex.decode("1f"), 0, inputCheck, 0, 1);
 		System.arraycopy(input, 0, inputCheck, 1, input.length);
 		System.arraycopy(hash1, 0, inputCheck, input.length + 1, 4);
 		return Base58.encode(inputCheck);

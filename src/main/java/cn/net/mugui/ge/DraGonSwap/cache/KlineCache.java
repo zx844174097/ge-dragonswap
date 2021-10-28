@@ -21,6 +21,9 @@ public class KlineCache implements CacheModel {
 
 	private static long GlobalCache_time = 5000;
 	private static TimedCache<String, Message> map = new TimedCache<String, Message>(GlobalCache_time);
+	static {
+		map.schedulePrune(60000);
+	}
 
 	private String getKey(NetBag bag) {
 		return (bag.getFunc() + Other.MD5(bag.getData().toString()));
