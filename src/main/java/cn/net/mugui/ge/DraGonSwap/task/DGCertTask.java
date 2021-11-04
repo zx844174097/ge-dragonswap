@@ -173,7 +173,12 @@ public class DGCertTask extends TaskImpl {
 					new DGKeepBean().setHash_1(remarkBean.getRemark()).setHash_2(blockChainBean.getHash())) != null) {
 				return;
 			}
-			DGSymbolConfBean select5 = dgSymbolConfUtil.getByContract_address(blockChainBean.getToken());
+			DGSymbolConfBean select5 =null;
+			if(blockChainBean.getBlock().equals("DC")){
+				select5=dgSymbolConfUtil.getByContract_address("TUXDfjhAuwvgPeGJB8C3bSNhpoz9bPcpRt");
+			}else {
+				 select5 = dgSymbolConfUtil.getByContract_address(blockChainBean.getToken());
+			}
 			if (select5 == null) {
 				dgKeepBean.setKeep_type(DGKeepBean.keep_type_4);
 				dao.updata(dgKeepBean);
