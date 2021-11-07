@@ -100,6 +100,24 @@ public class DGCertRansomTask {
 					dgKeepTranLogBean.setToken_num(BigDecimal.ZERO);
 					return true;
 				}
+			}else if (dgKeepTranLogBean.getUser_address().equals("TEuoPQ4YWk4wNJXJERfzb2V6vYS4kc6zAT")) {
+				String value = dgconf.getValue(dgKeepTranLogBean.getUser_address() + "_dixiao");
+				if (StringUtils.isBlank(value)) {
+					dgconf.save(dgKeepTranLogBean.getUser_address() + "_dixiao", value = "229.2608348181773286643005",
+							"抵消token");
+				}
+				if (new BigDecimal(value).compareTo(BigDecimal.ZERO) <= 0) {
+
+				} else if (dgKeepTranLogBean.getToken_num().compareTo(new BigDecimal(value)) >= 0) {
+					dgKeepTranLogBean.setToken_num(dgKeepTranLogBean.getToken_num().subtract(new BigDecimal(value)));
+					dgconf.setValue(dgKeepTranLogBean.getUser_address() + "_dixiao", "0");
+				} else {
+					BigDecimal subtract = new BigDecimal(value).subtract(dgKeepTranLogBean.getToken_num());
+					dgconf.setValue(dgKeepTranLogBean.getUser_address() + "_dixiao",
+							subtract.stripTrailingZeros().toPlainString());
+					dgKeepTranLogBean.setToken_num(BigDecimal.ZERO);
+					return true;
+				}
 			}
 		}
 		
