@@ -173,7 +173,11 @@ public class DGCertTask extends TaskImpl {
 					new DGKeepBean().setHash_1(remarkBean.getRemark()).setHash_2(blockChainBean.getHash())) != null) {
 				return;
 			}
-			DGSymbolConfBean select5 = dgSymbolConfUtil.getByContract_address(blockChainBean.getToken());
+			DGSymbolConfBean select5 = null;
+			if (StringUtils.isBlank(blockChainBean.getToken())) {
+				select5 = dgSymbolConfUtil.get(blockChainBean.getBlock());
+			} else
+				select5 = dgSymbolConfUtil.getByContract_address(blockChainBean.getToken());
 			if (select5 == null) {
 				dgKeepBean.setKeep_type(DGKeepBean.keep_type_4);
 				dao.updata(dgKeepBean);
@@ -202,7 +206,7 @@ public class DGCertTask extends TaskImpl {
 			}
 
 			DGKeepBean last = getLastKeepBean(dgSymbol.getSymbol());
-			System.out.println("增加流动性"+last);
+			System.out.println("增加流动性" + last);
 			DGSymbolDescriptBean symbol_des = swapBean.symbol_des;
 			BigDecimal divide2 = null;
 			if (symbol_des.getScale().compareTo(BigDecimal.ZERO) <= 0) {
@@ -224,14 +228,14 @@ public class DGCertTask extends TaskImpl {
 			}
 			last_big = last_big.setScale(18, BigDecimal.ROUND_DOWN);
 
-			DGSymbolConfBean select = confUtil.getByContract_address(select2.getToken_address());
+			DGSymbolConfBean select = dgSymbolConfUtil.getByContract_address(select2.getToken_address());
 
 			dgKeepBean.setBlock_3(select.getBlock_name());
 			dgKeepBean.setToken_3(select.getContract_address());
 			dgKeepBean.setLast_out_cert_token_num(last_big);
 			dgKeepBean.setNow_out_cert_token_num(last_big.add(dgKeepBean.getToken_num()));
 			dgKeepBean.setKeep_status(DGKeepBean.KEEP_STATUS_2);
-			System.out.println("增加流动性"+dgKeepBean);
+			System.out.println("增加流动性" + dgKeepBean);
 			dao.updata(dgKeepBean);
 			setLastKeepBean(dgKeepBean);
 			// 更新持有总量
@@ -247,8 +251,6 @@ public class DGCertTask extends TaskImpl {
 	@Autowired
 	private KCertLineTask kCertLineTask;
 
-	@Autowired
-	DGSymbolConfUtil confUtil;
 
 	@Autowired
 	private DSymbolManager manager;
