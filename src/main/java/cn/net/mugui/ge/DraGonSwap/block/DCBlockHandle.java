@@ -53,36 +53,64 @@ public class DCBlockHandle implements BlockHandleApi {
 		String address;
 	}
 
+//	@Override
+//	public Object getSendTran(String pri, String to_address, BigDecimal amount, String contract_address)
+//			throws Exception {
+//
+//		String decode = "1f" + Address.decode(to_address).substring(2);
+//		to_address = Address.encode(decode);
+//
+//		TempBean tempBean = getTempBean(pri);
+//
+//		Credential credential = tempBean.credential;
+//		if (StringUtils.isNotBlank(contract_address)) {
+//
+//			ContractTransaction tokenSignMessage = null;
+//			tokenSignMessage = mainNet.getTokenSignMessage(tempBean.address, contract_address, to_address, amount);
+//			String sign = credential.sign(tokenSignMessage.txId);
+//			tokenSignMessage.signature = new String[] { sign };
+//			txids.set(tokenSignMessage.txId);
+//			return tokenSignMessage;
+//
+//		} else {
+//			TransferTransaction tokenSignMessage = null;
+//			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, tempBean.address);
+//			String sign = credential.sign(tokenSignMessage.txId);
+//			tokenSignMessage.signature = new String[] { sign };
+//			verifySign(tempBean.address, sign, tokenSignMessage.txId, false);
+//			txids.set(tokenSignMessage.txId);
+//			return tokenSignMessage;
+//		}
+//	}
 	@Override
-	public Object getSendTran(String pri, String to_address, BigDecimal amount, String contract_address)
+	public Object getSendTran(String from_address, String to_address, BigDecimal amount, String contract_address)
 			throws Exception {
 
 		String decode = "1f" + Address.decode(to_address).substring(2);
 		to_address = Address.encode(decode);
 
-		TempBean tempBean = getTempBean(pri);
+//		TempBean tempBean = getTempBean(pri);
 
-		Credential credential = tempBean.credential;
+//		Credential credential = tempBean.credential;
 		if (StringUtils.isNotBlank(contract_address)) {
 
 			ContractTransaction tokenSignMessage = null;
-			tokenSignMessage = mainNet.getTokenSignMessage(tempBean.address, contract_address, to_address, amount);
-			String sign = credential.sign(tokenSignMessage.txId);
-			tokenSignMessage.signature = new String[] { sign };
+			tokenSignMessage = mainNet.getTokenSignMessage(from_address, contract_address, to_address, amount);
+//			String sign = credential.sign(tokenSignMessage.txId);
+//			tokenSignMessage.signature = new String[] { sign };
 			txids.set(tokenSignMessage.txId);
 			return tokenSignMessage;
 
 		} else {
 			TransferTransaction tokenSignMessage = null;
-			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, tempBean.address);
-			String sign = credential.sign(tokenSignMessage.txId);
-			tokenSignMessage.signature = new String[] { sign };
-			verifySign(tempBean.address, sign, tokenSignMessage.txId, false);
+			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, from_address);
+//			String sign = credential.sign(tokenSignMessage.txId);
+//			tokenSignMessage.signature = new String[] { sign };
+//			verifySign(tempBean.address, sign, tokenSignMessage.txId, false);
 			txids.set(tokenSignMessage.txId);
 			return tokenSignMessage;
 		}
 	}
-
 	/**
 	 * 校验签名
 	 * 

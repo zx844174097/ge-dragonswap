@@ -9,12 +9,15 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import com.google.gson.Gson;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.util.Other;
 
+import cn.net.mugui.ge.DraGonSwap.app.Symbol;
+import cn.net.mugui.ge.DraGonSwap.bean.BroadcastBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
@@ -167,16 +170,23 @@ public class DGCertTokenOutTask extends TaskImpl {
 	 */
 	private void broadcastTranFunds(DGKeepBean poll) {
 		add(poll);
-		try {
-			blockservice.broadcastTran(poll.getBlock_1(), poll.get().get("broadcast1"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			blockservice.broadcastTran(poll.getBlock_2(), poll.get().get("broadcast2"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Other.sleep(1000);
+		BroadcastBean bean = new BroadcastBean().setBlock(poll.getBlock_1()).setData(gson.toJson( poll.get().get("broadcast1")))
+				.setFrom_address(manager.get(poll.getDg_symbol()).pri_tran.getPri());
+		symbol.getLinkedDeque().addLast(bean);
+		 bean = new BroadcastBean().setBlock(poll.getBlock_2()).setData(gson.toJson( poll.get().get("broadcast2")))
+				.setFrom_address(manager.get(poll.getDg_symbol()).pri_tran.getPri());
+		symbol.getLinkedDeque().addLast(bean);
+//		try {
+//			blockservice.broadcastTran(poll.getBlock_1(), poll.get().get("broadcast1"));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			blockservice.broadcastTran(poll.getBlock_2(), poll.get().get("broadcast2"));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		return;
 	}
 
@@ -202,7 +212,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 	private void sendFunds(DGKeepBean poll) {
 		add(poll);
 		BigDecimal base_num = poll.getBase_num();
-		String pri = manager.get(poll.getDg_symbol()).pri_tran.getPri();
+		String user_address = manager.get(poll.getDg_symbol()).pri_tran.getPri();
 
 		String value = conf.getValue("error_back_dc");
 		if (StringUtils.isBlank(value)) {
@@ -229,13 +239,13 @@ public class DGCertTokenOutTask extends TaskImpl {
 			}
 		}
 		// 得到已签名数据
-		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), pri, poll.getUser_address(), base_num,
+		Message base_msg = blockservice.getSendTran(poll.getBlock_1(), user_address, poll.getUser_address(), base_num,
 				poll.getToken_1());
 
 		// 无论成功与否都修改为以转出
 		poll.setHash_1(BlockHandleApi.txids.get());
 		BlockHandleApi.txids.remove();
-		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), pri, poll.getUser_address(),
+		Message quote_msg = blockservice.getSendTran(poll.getBlock_2(), user_address, poll.getUser_address(),
 				poll.getQuotes_num(), poll.getToken_2());
 
 		if (base_msg.getType() != Message.SUCCESS || quote_msg.getType() != Message.SUCCESS) {
@@ -245,18 +255,30 @@ public class DGCertTokenOutTask extends TaskImpl {
 		poll.setHash_2(BlockHandleApi.txids.get());
 		BlockHandleApi.txids.remove();
 		poll.get().put("broadcast1", base_msg.getDate());
-		try {
-			blockservice.broadcastTran(poll.getBlock_1(), base_msg.getDate());// 广播
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
+		// 加入待广播数据
+		BroadcastBean bean = new BroadcastBean().setBlock(poll.getBlock_1()).setData(gson.toJson(base_msg.getDate()))
+				.setFrom_address(user_address);
+		symbol.getLinkedDeque().addLast(bean);
+
+//		try {
+//			blockservice.broadcastTran(poll.getBlock_1(), base_msg.getDate());// 广播
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 
 		poll.get().put("broadcast2", quote_msg.getDate());
-		try {
-			blockservice.broadcastTran(poll.getBlock_2(), quote_msg.getDate());// 广播
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			blockservice.broadcastTran(poll.getBlock_2(), quote_msg.getDate());// 广播
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+
+		// 加入待广播数据
+		bean = new BroadcastBean().setBlock(poll.getBlock_2()).setData(gson.toJson(quote_msg.getDate()))
+				.setFrom_address(user_address);
+		symbol.getLinkedDeque().addLast(bean);
+
 		poll.setKeep_status(DGKeepBean.KEEP_STATUS_5);
 		dao.updata(poll);
 	}
@@ -267,33 +289,47 @@ public class DGCertTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGKeepBean poll) {
 		add(poll);
-		try {
-			blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Other.sleep(1000);
+		BroadcastBean bean = new BroadcastBean().setBlock(poll.getBlock_3()).setData(gson.toJson( poll.get().get("broadcast")))
+				.setFrom_address(manager.get(poll.getDg_symbol()).pri_tran.getPri());
+		symbol.getLinkedDeque().addLast(bean);
+		
+//		try {
+//			blockservice.broadcastTran(poll.getBlock_3(), poll.get().get("broadcast"));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		return;
 	}
 
+	@Autowired
+	private Symbol symbol;
+	Gson gson = new Gson();
+
 	private void send(DGKeepBean poll) {
 		add(poll);
+		String user_address = manager.get(poll.getDg_symbol()).pri_tran.getPri();
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getBlock_3(),
-				manager.get(poll.getDg_symbol()).pri_tran.getPri(), poll.getUser_address(), poll.getToken_num(),
-				poll.getToken_3());
+		Message sendTran = blockservice.getSendTran(poll.getBlock_3(), user_address, poll.getUser_address(),
+				poll.getToken_num(), poll.getToken_3());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
+		// 加入待广播数据
+		BroadcastBean bean = new BroadcastBean().setBlock(poll.getBlock_3()).setData(gson.toJson(sendTran.getDate()))
+				.setFrom_address(user_address);
+		symbol.getLinkedDeque().addLast(bean);
+
 		poll.setHash_3(BlockHandleApi.txids.get());
 		BlockHandleApi.txids.remove();
 		poll.get().put("broadcast", sendTran.getDate());
-		try {
-
-			blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
-			// 无论成功与否都修改为以转出
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//
+//			blockservice.broadcastTran(poll.getBlock_3(), sendTran.getDate());// 广播
+//			// 无论成功与否都修改为以转出
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		poll.setKeep_status(DGKeepBean.KEEP_STATUS_3);
 		dao.updata(poll);
 	}

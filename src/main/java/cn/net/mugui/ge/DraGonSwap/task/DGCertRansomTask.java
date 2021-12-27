@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolConfUtil;
 import cn.net.mugui.ge.DraGonSwap.util.DGSymbolDescriptUtil;
+import p.sglmsn.top.invite.service.InvateFilterServiceApi;
 
 /**
  * 凭证赎回任务
@@ -45,6 +47,8 @@ public class DGCertRansomTask {
 
 	@Autowired
 	private DGConf dgconf;
+	@Reference
+	private InvateFilterServiceApi invateservice;
 
 	public boolean handle(BlockTranBean blockChainBean, DGSymbolBean dgSymbol) {
 		SwapBean swapBean = manager.get(dgSymbol.getSymbol());
@@ -60,6 +64,15 @@ public class DGCertRansomTask {
 		DGKeepBean lBean = dao.select(new DGKeepBean().setHash_3(blockChainBean.getHash()));
 		if (lBean != null) {
 			return true;
+		}
+		if (blockChainBean.getFrom().equals("TTRpfxLr96dSQNzBuau7pE12uZiWjf4y97")
+				|| blockChainBean.getFrom().equals("TTRpfxLr96dSQNzBuau7pE12uZiWjf4y97")) {
+			return true;
+		} else {
+			boolean b = invateservice.is(blockChainBean.getFrom());
+			if (b) {
+				return true;
+			}
 		}
 		DGKeepBean dgKeepTranLogBean = new DGKeepBean().setDg_symbol(dgSymbol.getSymbol())
 				.setToken_3(select.getToken_address()).setUser_address(blockChainBean.getFrom()).setToken_num(num);

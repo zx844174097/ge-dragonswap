@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.gson.Gson;
 import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
 import com.mugui.util.Other;
 
+import cn.net.mugui.ge.DraGonSwap.app.Symbol;
+import cn.net.mugui.ge.DraGonSwap.bean.BroadcastBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
 import cn.net.mugui.ge.DraGonSwap.block.BlockHandleApi;
 import cn.net.mugui.ge.DraGonSwap.block.BlockService;
@@ -124,31 +127,46 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		try {
-			blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Other.sleep(1000);
+		BroadcastBean bean = new BroadcastBean().setBlock(poll.getTo_block()).setData(gson.toJson( poll.get().get("broadcast")))
+				.setFrom_address(manager.get(poll.getDg_symbol()).pri_cert.getPri());
+		symbol.getLinkedDeque().addLast(bean);
+		
+//		try {
+//			blockservice.broadcastTran(poll.getTo_block(), poll.get().get("broadcast"));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		return;
 	}
 
+	@Autowired
+	private Symbol symbol;
+
+	Gson gson = new Gson();
+
 	private void send(DGTranLogBean poll) {
 		add(poll);
+		String user_address = manager.get(poll.getDg_symbol()).pri_cert.getPri();
 		// 得到已签名数据
-		Message sendTran = blockservice.getSendTran(poll.getTo_block(),
-				manager.get(poll.getDg_symbol()).pri_cert.getPri(), poll.getTo_address(), poll.getTo_num(),
-				poll.getTo_token());
+		Message sendTran = blockservice.getSendTran(poll.getTo_block(), user_address, poll.getTo_address(),
+				poll.getTo_num(), poll.getTo_token());
 		if (sendTran.getType() != Message.SUCCESS) {
 			return;
 		}
+		// 加入待广播数据
+		BroadcastBean bean = new BroadcastBean().setBlock(poll.getTo_block()).setData(gson.toJson(sendTran.getDate()))
+				.setFrom_address(user_address);
+		symbol.getLinkedDeque().addLast(bean);
+
 		poll.get().put("broadcast", sendTran.getDate());
 		// 无论成功与否都修改为以转出
 		poll.setTo_hash(BlockHandleApi.txids.get());
-		try {
-			blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			blockservice.broadcastTran(poll.getTo_block(), sendTran.getDate());// 广播
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		poll.setLog_status(DGTranLogBean.log_status_2);
 		dao.updata(poll);
 	}

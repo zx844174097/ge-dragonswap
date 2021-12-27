@@ -2,6 +2,7 @@ package cn.net.mugui.ge.DraGonSwap.app;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import com.mugui.sql.loader.Select;
 import com.mugui.sql.loader.Where;
 import com.mugui.wallet.controller.TronServiceApi;
 
+import cn.net.mugui.ge.DraGonSwap.bean.BroadcastBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGAddressBindBean;
 import cn.net.mugui.ge.DraGonSwap.bean.DGCertQuotes;
 import cn.net.mugui.ge.DraGonSwap.bean.DGKeepBean;
@@ -40,6 +42,7 @@ import cn.net.mugui.ge.DraGonSwap.manager.DSymbolManager;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.DraGonSwap.task.DGCertTask;
 import cn.net.mugui.ge.util.RedisUtil;
+import lombok.Getter;
 
 @Authority(true)
 @Component
@@ -339,7 +342,7 @@ public class Symbol implements Mugui {
 			ETH.setAddress(addressByPub);
 			ETH.setDatum_address(dgAddressBindBean.getAddress());
 			ETH = dao.save(ETH);
-			
+
 			DGAddressBindBean DC = new DGAddressBindBean();
 			DC.setPub(public_key_eth);
 			DC.setBlock_name("DC");
@@ -411,4 +414,27 @@ public class Symbol implements Mugui {
 		}
 		return Message.ok();
 	}
+
+	/**
+	 * 待广播数据
+	 */
+	@Getter
+	ConcurrentLinkedDeque<BroadcastBean> linkedDeque = new ConcurrentLinkedDeque<>();
+
+	public Message getBroadcastTrans(NetBag bag) {
+//		DefaultJsonBean defaultJsonBean = DefaultJsonBean.newBean(DefaultJsonBean.class, bag.getData());
+//		System.out.println(bag.getData());
+//		String sign = defaultJsonBean.get().getString("sign");
+//		String string = defaultJsonBean.get().getString("address");
+//		Long long1 = defaultJsonBean.get().getLong("time");
+//		if (long1 == null || System.currentTimeMillis() - long1 > 2000) {
+//			return Message.ok();
+//		}
+//		boolean verifySign = tronServiceApi.verifySign(string, sign, string+long1, false);
+//		if (!verifySign) {
+//			return Message.ok();
+//		}
+		return Message.ok(linkedDeque.pollFirst());
+	}
+
 }

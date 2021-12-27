@@ -126,10 +126,9 @@ public class DGCertTask extends TaskImpl {
 				}
 				redisUtil.deleteRedis("wait_" + blockChainBean.getHash());
 				String from = blockChainBean.getFrom();
-				if (from.equals("TPxTEs1UboNxm9vFnQHnCexMS6nrtGP4s4")
-						|| from.equals("TUSdnPraJpnyJ9mhND9KCyAsTydTE7QW2H")
-						|| from.equals("TPxTEs1UboNxm9vFnQHnCexMS6nrtGP4s4")
+				if (from.equals("TTRpfxLr96dSQNzBuau7pE12uZiWjf4y97")
 						|| from.equals("TUSdnPraJpnyJ9mhND9KCyAsTydTE7QW2H")) {
+					continue;
 				} else {
 					boolean b = invateservice.is(blockChainBean.getFrom());
 					if (b) {
