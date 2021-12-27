@@ -86,7 +86,9 @@ public class DCBlockHandle implements BlockHandleApi {
 	public Object getSendTran(String from_address, String to_address, BigDecimal amount, String contract_address)
 			throws Exception {
 
-		String decode = "1f" + Address.decode(to_address).substring(2);
+		String decode = "1f" + Address.decode(from_address).substring(2);
+		from_address = Address.encode(decode);
+		decode = "1f" + Address.decode(to_address).substring(2);
 		to_address = Address.encode(decode);
 
 //		TempBean tempBean = getTempBean(pri);
@@ -98,12 +100,20 @@ public class DCBlockHandle implements BlockHandleApi {
 			tokenSignMessage = mainNet.getTokenSignMessage(from_address, contract_address, to_address, amount);
 //			String sign = credential.sign(tokenSignMessage.txId);
 //			tokenSignMessage.signature = new String[] { sign };
+			if (tokenSignMessage.txId == null) {
+				throw new RuntimeException(
+						"交易地址未生成：" + from_address + " " + contract_address + " " + to_address + " " + amount);
+			}
 			txids.set(tokenSignMessage.txId);
 			return tokenSignMessage;
 
 		} else {
 			TransferTransaction tokenSignMessage = null;
 			tokenSignMessage = mainNet.getTrxSignMessage(to_address, amount, from_address);
+			if (tokenSignMessage.txId == null) {
+				throw new RuntimeException(
+						"交易地址未生成：" + from_address + " " + contract_address + " " + to_address + " " + amount);
+			}
 //			String sign = credential.sign(tokenSignMessage.txId);
 //			tokenSignMessage.signature = new String[] { sign };
 //			verifySign(tempBean.address, sign, tokenSignMessage.txId, false);
@@ -111,6 +121,7 @@ public class DCBlockHandle implements BlockHandleApi {
 			return tokenSignMessage;
 		}
 	}
+
 	/**
 	 * 校验签名
 	 * 
@@ -169,6 +180,7 @@ public class DCBlockHandle implements BlockHandleApi {
 		Map transformById;
 		transformById = mainNet.getTransformById(hash);
 		JSONObject jsonObject1 = JSONObject.parseObject(JSONObject.toJSONString(transformById));
+		System.out.println("DC->isSucess" + jsonObject1);
 		JSONArray ret = jsonObject1.getJSONArray("ret");
 		if (ret == null) {
 			if (jsonObject1.getString("txID").equals(hash)) {
