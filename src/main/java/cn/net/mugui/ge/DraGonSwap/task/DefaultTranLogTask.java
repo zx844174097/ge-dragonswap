@@ -127,6 +127,10 @@ public abstract class DefaultTranLogTask extends TaskImpl {
 			Object tran = null;
 			do {
 				tran = blockHandleApi.getTran(i);
+				if(tran==null) {
+					Other.sleep(100);
+					System.out.println(getName() + "->" + i);
+				}
 			} while (tran == null);
 			System.out.println(getName() + "->" + i);
 			List<BlockTranBean> handle = handle(tran);
