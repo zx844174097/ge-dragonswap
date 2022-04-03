@@ -35,7 +35,6 @@ public class DCTranLogTask extends DefaultTranLogTask {
 	@Reference
 	private InvateFilterServiceApi invateServiceApi;
 
-	private
 
 	EthBlock ethBlock = new EthBlock();
 
