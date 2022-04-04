@@ -96,6 +96,10 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				if (poll.getTran_log_create_time() == null) {
 					poll.setTran_log_create_time(new Date());
 				}
+				Long temp_time=poll.get().getLong("temp_time");
+				if(null==temp_time){
+					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
+				}
 				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 3000) {
 					add(poll);
 					break;
@@ -112,8 +116,10 @@ public class DGTransferTokenOutTask extends TaskImpl {
 					dao.updata(poll);
 					break;
 				}
-				broadcastTran(poll);
-				poll.setTran_log_create_time(new Date());
+				if(System.currentTimeMillis()-temp_time>3000) {
+					broadcastTran(poll);
+					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
+				}
 				break;
 			default:
 				break;
