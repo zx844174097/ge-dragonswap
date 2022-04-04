@@ -96,7 +96,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				if (poll.getTran_log_create_time() == null) {
 					poll.setTran_log_create_time(new Date());
 				}
-				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 5000) {
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 3000) {
 					add(poll);
 					break;
 				}
@@ -113,6 +113,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 					break;
 				}
 				broadcastTran(poll);
+				poll.setTran_log_create_time(new Date());
 				break;
 			default:
 				break;
