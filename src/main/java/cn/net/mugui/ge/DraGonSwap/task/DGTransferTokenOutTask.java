@@ -119,6 +119,8 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				if(System.currentTimeMillis()-temp_time>3000) {
 					broadcastTran(poll);
 					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
+				}else {
+					add(poll);
 				}
 				break;
 			default:
@@ -134,7 +136,6 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		Other.sleep(1000);
 		BroadcastBean bean = new BroadcastBean().setBlock(poll.getTo_block()).setData(gson.toJson( poll.get().get("broadcast")))
 				.setFrom_address(manager.get(poll.getDg_symbol()).pri_cert.getPri());
 		symbol.getLinkedDeque().addLast(bean);
