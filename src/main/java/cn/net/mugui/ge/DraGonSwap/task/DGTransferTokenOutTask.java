@@ -110,6 +110,11 @@ public class DGTransferTokenOutTask extends TaskImpl {
 					dao.updata(poll);
 					break;
 				}
+				if (isSucess(poll)) {
+					poll.setLog_status(DGTranLogBean.log_status_5);
+					dao.updata(poll);
+					break;
+				}
 				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() > 30000) {
 					poll.setLog_status(DGTranLogBean.log_status_3);
 					poll.setLog_detail("转账失败");
