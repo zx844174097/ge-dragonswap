@@ -102,7 +102,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 					break;
 
 				case DGKeepBean.KEEP_STATUS_3:
-					
+
 					Long temp_time = poll.get().getLong("temp_time");
 					if (null == temp_time) {
 						poll.get().put("temp_time", temp_time = System.currentTimeMillis());
@@ -118,6 +118,11 @@ public class DGCertTokenOutTask extends TaskImpl {
 						dao.updata(poll);
 						break;
 					}
+					if (isSucess(poll)) {
+						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
+						dao.updata(poll);
+						break;
+					}
 					if (System.currentTimeMillis() - poll.getKeep_create_time().getTime() > 30000) {
 						poll.setKeep_status(DGKeepBean.KEEP_STATUS_7);
 						poll.setKeep_type(DGKeepBean.keep_type_2);
@@ -127,7 +132,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 					if (System.currentTimeMillis() - temp_time > 1000) {
 						broadcastTran(poll);
 						poll.get().put("temp_time", temp_time = System.currentTimeMillis());
-					}else {
+					} else {
 						add(poll);
 					}
 					Other.sleep(500);
@@ -172,7 +177,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 					if (System.currentTimeMillis() - temp_time > 1000) {
 						broadcastTranFunds(poll);
 						poll.get().put("temp_time", temp_time = System.currentTimeMillis());
-					}else {
+					} else {
 						add(poll);
 					}
 					Other.sleep(500);
