@@ -100,7 +100,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				if(null==temp_time){
 					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
 				}
-				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 1000) {
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 5000) {
 					add(poll);
 					break;
 				}
