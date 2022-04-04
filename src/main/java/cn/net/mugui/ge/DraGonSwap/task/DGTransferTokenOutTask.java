@@ -122,6 +122,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				}else {
 					add(poll);
 				}
+				Other.sleep(500);
 				break;
 			default:
 				break;
@@ -136,7 +137,6 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		Other.sleep(500);
 		BroadcastBean bean = new BroadcastBean().setBlock(poll.getTo_block()).setData(gson.toJson( poll.get().get("broadcast")))
 				.setFrom_address(manager.get(poll.getDg_symbol()).pri_cert.getPri());
 		symbol.getLinkedDeque().addLast(bean);

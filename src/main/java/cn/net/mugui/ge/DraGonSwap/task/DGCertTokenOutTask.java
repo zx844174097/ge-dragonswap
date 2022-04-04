@@ -130,6 +130,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 					}else {
 						add(poll);
 					}
+					Other.sleep(500);
 					break;
 				default:
 					break;
@@ -174,6 +175,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 					}else {
 						add(poll);
 					}
+					Other.sleep(500);
 					break;
 				default:
 					break;
@@ -197,7 +199,6 @@ public class DGCertTokenOutTask extends TaskImpl {
 		bean = new BroadcastBean().setBlock(poll.getBlock_2()).setData(gson.toJson(poll.get().get("broadcast2")))
 				.setFrom_address(manager.get(poll.getDg_symbol()).pri_tran.getPri());
 		symbol.getLinkedDeque().addLast(bean);
-		Other.sleep(500);
 //		try {
 //			blockservice.broadcastTran(poll.getBlock_1(), poll.get().get("broadcast1"));
 //		} catch (Exception e) {
@@ -310,7 +311,6 @@ public class DGCertTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGKeepBean poll) {
 		add(poll);
-		Other.sleep(500);
 		BroadcastBean bean = new BroadcastBean().setBlock(poll.getBlock_3())
 				.setData(gson.toJson(poll.get().get("broadcast")))
 				.setFrom_address(manager.get(poll.getDg_symbol()).pri_tran.getPri());
