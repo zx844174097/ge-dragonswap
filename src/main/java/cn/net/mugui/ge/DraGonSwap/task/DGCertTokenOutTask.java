@@ -359,6 +359,7 @@ public class DGCertTokenOutTask extends TaskImpl {
 //		}
 		poll.setKeep_status(DGKeepBean.KEEP_STATUS_3);
 		dao.updata(poll);
+		Other.sleep(100);
 	}
 
 	@Autowired
