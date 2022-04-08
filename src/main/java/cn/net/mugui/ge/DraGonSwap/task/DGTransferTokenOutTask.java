@@ -183,6 +183,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 //		}
 		poll.setLog_status(DGTranLogBean.log_status_2);
 		dao.updata(poll);
+		Other.sleep(100);
 	}
 
 	@Autowired
