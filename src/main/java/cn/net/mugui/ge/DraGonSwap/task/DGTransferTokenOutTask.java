@@ -62,8 +62,8 @@ public class DGTransferTokenOutTask extends TaskImpl {
 		}
 		{
 			DGTranLogBean setLog_status = new DGTranLogBean().setLog_status(3);
-			Select.q(setLog_status).where(Where.q(setLog_status).gt("tran_log_id", "71366").limit(0, 3)); 
-			List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(3));
+			Select where = Select.q(setLog_status).where(Where.q(setLog_status).gt("tran_log_id", "71366").limit(0, 3)); 
+			List<DGTranLogBean> selectList = dao.selectList(DGTranLogBean.class,where);
 			for (DGTranLogBean bean : selectList) {
 				if(System.currentTimeMillis()-bean.getTran_log_create_time().getTime()>90000) {
 					if(isSucess(bean)) {
