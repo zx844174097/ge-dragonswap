@@ -13,6 +13,8 @@ import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
+import com.mugui.sql.loader.Select;
+import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.app.Symbol;
@@ -44,13 +46,37 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	@Scheduled(cron = "0 0/2 * * * ? ")
 	public synchronized void retryRun() {
-		List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(6));
-		for (DGTranLogBean bean : selectList) {
-			bean.setLog_status(DGTranLogBean.log_status_1);
-			bean.setTran_log_create_time(new Date());
-			dao.updata(bean);
-			add(bean);
+		{
+			List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(6));
+			for (DGTranLogBean bean : selectList) {
+				if(isSucess(bean)) {
+					bean.setLog_status(DGTranLogBean.log_status_5);
+					dao.updata(bean);
+				}else {
+					bean.setLog_status(DGTranLogBean.log_status_1);
+					bean.setTran_log_create_time(new Date());
+					dao.updata(bean);
+					add(bean);
+				}
+			}
 		}
+		{
+			DGTranLogBean setLog_status = new DGTranLogBean().setLog_status(3);
+			Select.q(setLog_status).where(Where.q(setLog_status).gt("tran_log_id", "71366").limit(0, 3)); 
+			List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(3));
+			for (DGTranLogBean bean : selectList) {
+				if(System.currentTimeMillis()-bean.getTran_log_create_time().getTime()>90000) {
+					if(isSucess(bean)) {
+						bean.setLog_status(DGTranLogBean.log_status_5);
+						dao.updata(bean);
+					}else {
+						bean.setLog_status(6);
+						dao.updata(bean);
+					}
+				}
+			}
+		}
+		
 	}
 
 	@Override
