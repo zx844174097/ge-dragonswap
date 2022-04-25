@@ -130,15 +130,16 @@ public class DGTransferMatchTask extends TaskImpl {
 
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[1]);
 
-			boolean bol = dgSymbolDescriptUtil.reckonInBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
-			if (bol) {
+			BigDecimal bol = dgSymbolDescriptUtil.reckonInBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
+			if (bol!=null) {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale).setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_UP).stripTrailingZeros();
 				
 				saveSystem_fee_scale(multiply, swapBean.symbol, bean.getTo_address(), dgSymbolConfUtil.get(split[0]));
 				bean.setStart_base_total(swapBean.symbol_des.getBase_num());
 				bean.setStart_quote_total(swapBean.symbol_des.getQuote_num());
-				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply));
+				
+				BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply),bol);
 
 				bean.setEnd_base_total(swapBean.symbol_des.getBase_num());
 				bean.setEnd_quote_total(swapBean.symbol_des.getQuote_num());
@@ -153,9 +154,9 @@ public class DGTransferMatchTask extends TaskImpl {
 		} else {// 计价币种
 			DGSymbolConfBean dgSymbolConfBean = dgSymbolConfUtil.get(split[0]);
 
-			boolean bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
+			BigDecimal bol = dgSymbolDescriptUtil.reckonInQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, bean.getTo_limit_num());
 
-			if (bol) {
+			if (bol!=null) {
 
 				BigDecimal multiply = fee_num.multiply(system_fee_scale).setScale(dgSymbolConfBean.getPrecision(), BigDecimal.ROUND_UP);
 
@@ -165,7 +166,7 @@ public class DGTransferMatchTask extends TaskImpl {
 				bean.setStart_base_total(swapBean.symbol_des.getBase_num());
 				bean.setStart_quote_total(swapBean.symbol_des.getQuote_num());
 				
-				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply));
+				BigDecimal inQuote = dgSymbolDescriptUtil.inQuote(bc_amount, dgSymbolConfBean.getPrecision(), swapBean, fee_num.subtract(multiply),bol);
 			
 
 				bean.setEnd_base_total(swapBean.symbol_des.getBase_num());
