@@ -145,7 +145,7 @@ public class DGTransferMatchTask extends TaskImpl {
 				bean.setEnd_quote_total(swapBean.symbol_des.getQuote_num());
 				
 				bean.setTo_num(inBase);
-				bean.setScale(inBase.divide(bc_amount, 8, BigDecimal.ROUND_DOWN));
+				bean.setScale(bean.getEnd_base_total().divide(bean.getEnd_quote_total(), 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
 				transfer.add(bean);
 				kTranLineTask.add(bean);
@@ -173,7 +173,7 @@ public class DGTransferMatchTask extends TaskImpl {
 				bean.setEnd_quote_total(swapBean.symbol_des.getQuote_num());
 				
 				bean.setTo_num(inQuote);
-				bean.setScale(bc_amount.divide(inQuote, 8, BigDecimal.ROUND_DOWN));
+				bean.setScale(bean.getEnd_base_total().divide(bean.getEnd_quote_total(), 8, BigDecimal.ROUND_DOWN));
 				dao.updata(bean);
 				transfer.add(bean);
 				kTranLineTask.add(bean);
