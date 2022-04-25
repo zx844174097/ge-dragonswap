@@ -147,7 +147,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 					dao.updata(poll);
 					break;
 				}
-				if(System.currentTimeMillis()-temp_time>3000) {
+				if(System.currentTimeMillis()-temp_time>5000) {
 					broadcastTran(poll);
 					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
 				}else {
