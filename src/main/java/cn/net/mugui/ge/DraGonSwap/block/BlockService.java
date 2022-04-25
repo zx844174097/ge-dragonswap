@@ -60,7 +60,7 @@ public class BlockService {
 			return getBlockHandleApi(block_name).isSucess(hash);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Other.sleep(5000);
+			Other.sleep(500);
 			return false;
 		}
 	}

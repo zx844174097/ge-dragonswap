@@ -13,6 +13,8 @@ import com.mugui.spring.TaskImpl;
 import com.mugui.spring.base.Task;
 import com.mugui.spring.net.auto.AutoTask;
 import com.mugui.spring.net.bean.Message;
+import com.mugui.sql.loader.Select;
+import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.app.Symbol;
@@ -44,13 +46,37 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	@Scheduled(cron = "0 0/2 * * * ? ")
 	public synchronized void retryRun() {
-		List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(6));
-		for (DGTranLogBean bean : selectList) {
-			bean.setLog_status(DGTranLogBean.log_status_1);
-			bean.setTran_log_create_time(new Date());
-			dao.updata(bean);
-			add(bean);
+		{
+			List<DGTranLogBean> selectList = dao.selectList(new DGTranLogBean().setLog_status(6));
+			for (DGTranLogBean bean : selectList) {
+				if(isSucess(bean)) {
+					bean.setLog_status(DGTranLogBean.log_status_5);
+					dao.updata(bean);
+				}else {
+					bean.setLog_status(DGTranLogBean.log_status_1);
+					bean.setTran_log_create_time(new Date());
+					dao.updata(bean);
+					add(bean);
+				}
+			}
 		}
+		{
+			DGTranLogBean setLog_status = new DGTranLogBean().setLog_status(3);
+			Select where = Select.q(setLog_status).where(Where.q(setLog_status).gt("tran_log_id", "71366").limit(0, 3)); 
+			List<DGTranLogBean> selectList = dao.selectList(DGTranLogBean.class,where);
+			for (DGTranLogBean bean : selectList) {
+				if(System.currentTimeMillis()-bean.getTran_log_create_time().getTime()>90000) {
+					if(isSucess(bean)) {
+						bean.setLog_status(DGTranLogBean.log_status_5);
+						dao.updata(bean);
+					}else {
+						bean.setLog_status(6);
+						dao.updata(bean);
+					}
+				}
+			}
+		}
+		
 	}
 
 	@Override
@@ -100,7 +126,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 				if(null==temp_time){
 					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
 				}
-				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 2000) {
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() < 5000) {
 					add(poll);
 					break;
 				}
@@ -110,16 +136,24 @@ public class DGTransferTokenOutTask extends TaskImpl {
 					dao.updata(poll);
 					break;
 				}
-				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() > 60000) {
+				if (isSucess(poll)) {
+					poll.setLog_status(DGTranLogBean.log_status_5);
+					dao.updata(poll);
+					break;
+				}
+				if (System.currentTimeMillis() - poll.getTran_log_create_time().getTime() > 30000) {
 					poll.setLog_status(DGTranLogBean.log_status_3);
 					poll.setLog_detail("转账失败");
 					dao.updata(poll);
 					break;
 				}
-				if(System.currentTimeMillis()-temp_time>3000) {
+				if(System.currentTimeMillis()-temp_time>1000) {
 					broadcastTran(poll);
 					poll.get().put("temp_time", temp_time=System.currentTimeMillis());
+				}else {
+					add(poll);
 				}
+				Other.sleep(500);
 				break;
 			default:
 				break;
@@ -134,7 +168,6 @@ public class DGTransferTokenOutTask extends TaskImpl {
 
 	private void broadcastTran(DGTranLogBean poll) {
 		add(poll);
-		Other.sleep(1000);
 		BroadcastBean bean = new BroadcastBean().setBlock(poll.getTo_block()).setData(gson.toJson( poll.get().get("broadcast")))
 				.setFrom_address(manager.get(poll.getDg_symbol()).pri_cert.getPri());
 		symbol.getLinkedDeque().addLast(bean);
@@ -176,6 +209,7 @@ public class DGTransferTokenOutTask extends TaskImpl {
 //		}
 		poll.setLog_status(DGTranLogBean.log_status_2);
 		dao.updata(poll);
+		Other.sleep(100);
 	}
 
 	@Autowired
