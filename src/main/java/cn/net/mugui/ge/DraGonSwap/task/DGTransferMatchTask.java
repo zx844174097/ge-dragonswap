@@ -82,7 +82,19 @@ public class DGTransferMatchTask extends TaskImpl {
 		}
 		linkedList = new LinkedList<>(match_list.keySet());
 		for (Integer key : linkedList) {
-			handle(match_list.get(key));
+			try {
+				dao.getSqlServer().setAutoCommit(false);
+				handle(match_list.get(key));
+				dao.getSqlServer().commit();
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					dao.getSqlServer().rollback();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				return;
+			}
 
 		}
 		addNewLog();
