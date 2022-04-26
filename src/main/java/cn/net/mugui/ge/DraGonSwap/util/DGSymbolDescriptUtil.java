@@ -70,7 +70,9 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = null;
 			if (bol != null) {
 				subtract=bol;
-				quote_num=symbol_des.getQuote_num().subtract(bol);
+				System.out.println("inBase base-> "+subtract.stripTrailingZeros().toPlainString());
+				quote_num=symbol_des.getQuote_num().subtract(bol).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
+				System.out.println("inBase quote-> "+quote_num.stripTrailingZeros().toPlainString());
 			} else {
 				quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_UP);
 				subtract = symbol_des.getQuote_num().subtract(quote_num);
@@ -106,6 +108,7 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			if (subtract.compareTo(limit_num) >= 0) {
 				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
+				System.out.println("limit_num-> "+limit_num.stripTrailingZeros().toPlainString());
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
 					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
@@ -161,7 +164,7 @@ public class DGSymbolDescriptUtil {
 			BigDecimal subtract = null;
 			if (bol != null) {
 				subtract=bol;
-				base_num=symbol_des.getBase_num().subtract(bol);
+				base_num=symbol_des.getBase_num().subtract(bol).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 			} else {
 				base_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_UP);
 				subtract = symbol_des.getBase_num().subtract(base_num);
