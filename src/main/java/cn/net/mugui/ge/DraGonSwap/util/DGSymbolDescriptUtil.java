@@ -105,6 +105,7 @@ public class DGSymbolDescriptUtil {
 			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			if (subtract.compareTo(limit_num) >= 0) {
+				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
 					return subtract.multiply(new BigDecimal("0.9"));
 				}
@@ -129,6 +130,7 @@ public class DGSymbolDescriptUtil {
 			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getBase_num().subtract(quote_num);
 			if (subtract.compareTo(limit_num) >= 0) {
+				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
 					return subtract.multiply(new BigDecimal("0.9"));
 				}
