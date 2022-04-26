@@ -107,7 +107,7 @@ public class DGSymbolDescriptUtil {
 			if (subtract.compareTo(limit_num) >= 0) {
 				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
-					return subtract.multiply(new BigDecimal("0.9"));
+					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
 				return limit_num;
 			}
@@ -132,7 +132,7 @@ public class DGSymbolDescriptUtil {
 			if (subtract.compareTo(limit_num) >= 0) {
 				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
-					return subtract.multiply(new BigDecimal("0.9"));
+					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
 				return limit_num;
 			}
