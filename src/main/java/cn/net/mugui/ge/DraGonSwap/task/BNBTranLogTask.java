@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.web3j.protocol.core.methods.response.EthBlock.Block;
 import org.web3j.protocol.core.methods.response.EthBlock.TransactionObject;
 import org.web3j.protocol.core.methods.response.EthBlock.TransactionResult;
@@ -20,8 +21,9 @@ import cn.net.mugui.ge.block.eth.EthBlock;
 
 @AutoTask
 @Task(blank = 1000 * 5, value = Task.CYCLE)
-public class BNBTranLogTask extends ETHTranLogTask{
-	
+@Component()
+public class BNBTranLogTask extends DefaultTranLogTask {
+
 	@Override
 	public String getName() {
 		return "BNB";
@@ -31,7 +33,7 @@ public class BNBTranLogTask extends ETHTranLogTask{
 
 	@Override
 	protected List<BlockTranBean> handle(Object tran) {
-		
+
 		Block block = (Block) tran;
 		List<TransactionResult> transactions = block.getTransactions();
 		List<BlockTranBean> list = new LinkedList<>();
@@ -43,8 +45,10 @@ public class BNBTranLogTask extends ETHTranLogTask{
 				if (o.getInput().equals("0x")) {
 					if (map.get(o.getTo()) != null) {
 						tranBean.setBlock(getName()).setFrom(o.getFrom()).setTo(o.getTo());
-						tranBean.setNum(new BigDecimal(o.getValue()).divide(new BigDecimal("1E18"))).setHash(o.getHash());
-						tranBean.setFee(new BigDecimal(o.getGasPrice().multiply(o.getGas())).divide(new BigDecimal("1E18")));
+						tranBean.setNum(new BigDecimal(o.getValue()).divide(new BigDecimal("1E18")))
+								.setHash(o.getHash());
+						tranBean.setFee(
+								new BigDecimal(o.getGasPrice().multiply(o.getGas())).divide(new BigDecimal("1E18")));
 						list.add(tranBean);
 					}
 				} else {
@@ -55,8 +59,10 @@ public class BNBTranLogTask extends ETHTranLogTask{
 						tranBean.setToken(o.getTo());
 						tranBean.setTo("0x" + o.getInput().substring(34, 34 + 40));
 						if (map.get(tranBean.getTo()) != null) {
-							tranBean.setNum(ethBlock.bigIntegerToBigDecimal(new BigInteger(Hex.decode(o.getInput().substring(74))), tranBean.getToken()));
-							tranBean.setFee(new BigDecimal(o.getGasPrice().multiply(o.getGas())).divide(new BigDecimal("1E18")));
+							tranBean.setNum(ethBlock.bigIntegerToBigDecimal(
+									new BigInteger(Hex.decode(o.getInput().substring(74))), tranBean.getToken()));
+							tranBean.setFee(new BigDecimal(o.getGasPrice().multiply(o.getGas()))
+									.divide(new BigDecimal("1E18")));
 							list.add(tranBean);
 						}
 					}
