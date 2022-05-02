@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.core.methods.response.EthBlock.Block;
@@ -17,7 +16,7 @@ import com.mugui.spring.net.auto.AutoTask;
 
 import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
-import cn.net.mugui.ge.block.eth.EthBlock;
+import cn.net.mugui.ge.block.Bnb.BNBBlock;
 
 @AutoTask
 @Task(blank = 1000 * 5, value = Task.CYCLE)
@@ -29,7 +28,7 @@ public class BNBTranLogTask extends DefaultTranLogTask {
 		return "BNB";
 	}
 
-	EthBlock ethBlock = new EthBlock();
+	BNBBlock ethBlock = new BNBBlock();
 
 	@Override
 	protected List<BlockTranBean> handle(Object tran) {
@@ -59,8 +58,10 @@ public class BNBTranLogTask extends DefaultTranLogTask {
 						tranBean.setToken(o.getTo());
 						tranBean.setTo("0x" + o.getInput().substring(34, 34 + 40));
 						if (map.get(tranBean.getTo()) != null) {
-							tranBean.setNum(ethBlock.bigIntegerToBigDecimal(
-									new BigInteger(Hex.decode(o.getInput().substring(74))), tranBean.getToken()));
+							System.out.println(tranBean + " " + o.getInput().substring(74) + " "
+									+ new BigInteger(o.getInput().substring(74), 16));
+
+							tranBean.setNum(ethBlock.bigIntegerToBigDecimal(new BigInteger(o.getInput().substring(74), 16), tranBean.getToken()));
 							tranBean.setFee(new BigDecimal(o.getGasPrice().multiply(o.getGas()))
 									.divide(new BigDecimal("1E18")));
 							list.add(tranBean);
