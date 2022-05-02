@@ -183,7 +183,7 @@ public class DCBlockHandle implements BlockHandleApi {
 		System.out.println("DC->isSucess" + jsonObject1);
 		JSONArray ret = jsonObject1.getJSONArray("ret");
 		if (ret == null) {
-			if (jsonObject1.getString("txID").equals(hash)) {
+			if (hash.equals(jsonObject1.getString("txID"))) {
 				return true;
 			}
 			return false;
