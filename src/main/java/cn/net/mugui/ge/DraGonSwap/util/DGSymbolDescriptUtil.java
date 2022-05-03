@@ -2,8 +2,10 @@ package cn.net.mugui.ge.DraGonSwap.util;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cn.hutool.core.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,8 +57,6 @@ public class DGSymbolDescriptUtil {
 	 * @param bc_amount
 	 * @param fee_num
 	 * @param bol
-	 * @param select
-	 * @param string
 	 * @return
 	 */
 	public BigDecimal inBase(BigDecimal bc_amount, int precision, SwapBean swapBean, BigDecimal fee_num,
@@ -107,15 +107,54 @@ public class DGSymbolDescriptUtil {
 			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getQuote_num().subtract(quote_num);
 			if (subtract.compareTo(limit_num) >= 0) {
-				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				System.out.println("limit_num-> "+limit_num.stripTrailingZeros().toPlainString());
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
 					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
+				limit_num=subtract.subtract(limit_num).multiply(getRandom()).add(limit_num);
+				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				return limit_num;
 			}
 			return null;
 		}
+	}
+
+	public BigDecimal getRandom(){
+		double v = RandomUtil.getRandom().nextGaussian()*0.4+0.7;
+		v=Math.min(1,v);
+		v=Math.max(0,v);
+		if(v==1.0){
+			v=RandomUtil.randomDouble(0.8,1);
+		}
+		if(v==0){
+			v=RandomUtil.randomDouble(0,0.2);
+		}
+		return new BigDecimal(1-v);
+	}
+
+	public static void main(String[] args) {
+		int index=0;
+		for(int i=0;i<1000;i++){
+
+			double v = RandomUtil.getRandom().nextGaussian()*0.4+0.7;
+			v=Math.min(1,v);
+			v=Math.max(0,v);
+			if(v==1.0){
+				v=RandomUtil.randomDouble(0.8,1);
+			}
+			if(v==0){
+				v=RandomUtil.randomDouble(0,0.2);
+			}
+
+			if(1-v>0.5){
+
+				index++;
+			}
+
+
+			System.out.println(1-v);
+		}
+		System.out.println(index);
 	}
 
 	/**
@@ -133,10 +172,12 @@ public class DGSymbolDescriptUtil {
 			BigDecimal quote_num = symbol_des.getTotal_num().divide(add, precision, BigDecimal.ROUND_DOWN);
 			BigDecimal subtract = symbol_des.getBase_num().subtract(quote_num);
 			if (subtract.compareTo(limit_num) >= 0) {
-				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
+
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
 					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
+				limit_num=subtract.subtract(limit_num).multiply(getRandom()).add(limit_num);
+				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
 				return limit_num;
 			}
 			return null;
