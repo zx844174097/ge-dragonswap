@@ -2,13 +2,12 @@ package cn.net.mugui.ge.DraGonSwap.util;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import cn.hutool.core.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolDescriptBean;
 import cn.net.mugui.ge.DraGonSwap.bean.SwapBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
@@ -109,7 +108,7 @@ public class DGSymbolDescriptUtil {
 			if (subtract.compareTo(limit_num) >= 0) {
 				System.out.println("limit_num-> "+limit_num.stripTrailingZeros().toPlainString());
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
-					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
+					return subtract.multiply(new BigDecimal("0.95")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
 				limit_num=subtract.subtract(limit_num).multiply(getRandom()).add(limit_num);
 				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
@@ -174,7 +173,7 @@ public class DGSymbolDescriptUtil {
 			if (subtract.compareTo(limit_num) >= 0) {
 
 				if (limit_num.compareTo(new BigDecimal("0.000002")) <= 0) {
-					return subtract.multiply(new BigDecimal("0.9")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
+					return subtract.multiply(new BigDecimal("0.95")).setScale(precision,BigDecimal.ROUND_HALF_DOWN);
 				}
 				limit_num=subtract.subtract(limit_num).multiply(getRandom()).add(limit_num);
 				limit_num=limit_num.setScale(precision, BigDecimal.ROUND_HALF_DOWN);
