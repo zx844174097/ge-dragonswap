@@ -25,6 +25,9 @@ public class AddressBindUtil {
 		if (datumAddress == null) {
 			return null;
 		}
+		if(block.equals("BNB")){
+			block="ETH";
+		}
 		DGAddressBindBean select = dao.select(new DGAddressBindBean().setDatum_address(datumAddress).setBlock_name(block));
 		if (select == null) {
 			return null;
