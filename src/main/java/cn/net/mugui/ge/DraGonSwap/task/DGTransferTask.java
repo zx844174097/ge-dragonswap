@@ -3,6 +3,8 @@ package cn.net.mugui.ge.DraGonSwap.task;
 import java.math.BigDecimal;
 import java.util.List;
 
+import cn.hutool.core.util.NumberUtil;
+import cn.net.mugui.ge.DraGonSwap.bean.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,6 @@ import com.mugui.sql.loader.Where;
 import com.mugui.util.Other;
 
 import cn.net.mugui.ge.DraGonSwap.admin.SymbolAdmin;
-import cn.net.mugui.ge.DraGonSwap.bean.BlockTranBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGPriAddressBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolConfBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGSymbolPriBean;
-import cn.net.mugui.ge.DraGonSwap.bean.DGTranLogBean;
-import cn.net.mugui.ge.DraGonSwap.bean.PushRemarkBean;
 import cn.net.mugui.ge.DraGonSwap.dao.DGDao;
 import cn.net.mugui.ge.DraGonSwap.service.DGConf;
 import cn.net.mugui.ge.DraGonSwap.util.AddressBindUtil;
@@ -48,6 +43,24 @@ public class DGTransferTask extends TaskImpl {
 
 	@Autowired
 	private DGDao dao;
+
+
+	@Override
+	public void init() {
+		dao.createTable(DCExtraFeeBean.class);
+
+		String dc_extra_fee_scale = sysConfApi.getValue("dc_extra_fee_scale");
+		if(!NumberUtil.isDouble(dc_extra_fee_scale)){
+			sysConfApi.setValue("dc_extra_fee_scale",dc_extra_fee_scale="0.01");
+		}
+		DC_EXTRA_FEE_SCALE=new BigDecimal(dc_extra_fee_scale);
+
+
+		POOL_BUY_ADDRESS = sysConfApi.getValue("pool_buy_address");
+		if(StringUtils.isBlank(POOL_BUY_ADDRESS)){
+			sysConfApi.setValue("pool_buy_address",POOL_BUY_ADDRESS="DjuC4pS7CexgqRALEqFXDcttyzLtmfPqTQ");
+		}
+	}
 
 	@Override
 	public void run() {
@@ -160,6 +173,19 @@ public class DGTransferTask extends TaskImpl {
 		}
 	}
 
+	/**
+	 * 矿池卖出地址
+	 */
+	private static  String POOL_BUY_ADDRESS=null;
+
+	/**
+	 * DC额外手续费比例
+	 */
+	private static  BigDecimal DC_EXTRA_FEE_SCALE =null;
+
+	@Autowired
+	private DCExtraFeeTask dcextraFeeTask;
+
 	private void handle(BlockTranBean blockChainBean, DGTranLogBean log, DGSymbolBean dgSymbol,
 			DGSymbolConfBean select2) {
 
@@ -193,7 +219,10 @@ public class DGTransferTask extends TaskImpl {
 			if (dgSymbol.getBase_max_amt().compareTo(bc_amount) < 0) {
 				bc_amount = dgSymbol.getBase_max_amt();
 			}
-			log.setFrom_num(bc_amount);
+			//处理额外手续费
+			handleDCExtraFee(log);
+
+//			log.setFrom_num(bc_amount);
 
 //			BigDecimal inBase = dgSymbolDescriptUtil.inBase(bc_amount, select.getPrecision(), dgSymbol.getSymbol());
 //			log.setTo_num(inBase);
@@ -239,6 +268,36 @@ public class DGTransferTask extends TaskImpl {
 		}
 		log.setLog_status(DGTranLogBean.log_status_0);
 		log = dao.save(log);
+	}
+
+	private void handleDCExtraFee(DGTranLogBean log) {
+		try {
+			if(!POOL_BUY_ADDRESS.equals(log.getFrom_address())&&log.getFrom_token_name().equals("DC")){//扣除5%手续费
+
+				DCExtraFeeBean dcExtraFeeBean=new DCExtraFeeBean();
+				dcExtraFeeBean.setToken(log.getFrom_token());
+				dcExtraFeeBean.setBlock(log.getFrom_block());
+				dcExtraFeeBean.setStart_num(log.getFrom_num());
+
+				dcExtraFeeBean.setFrom_address(log.getFrom_address());
+
+				dcExtraFeeBean.setFrom_hash(log.getFrom_hash());
+
+				BigDecimal fee = dcExtraFeeBean.getStart_num().multiply(DC_EXTRA_FEE_SCALE);
+				dcExtraFeeBean.setFee_num(fee);
+				dcExtraFeeBean.setEnd_num(dcExtraFeeBean.getStart_num().subtract(fee).setScale(6,BigDecimal.ROUND_DOWN));
+
+				dcExtraFeeBean=dao.save(dcExtraFeeBean);
+				dcextraFeeTask.add(dcExtraFeeBean);
+
+				log.setFrom_num(dcExtraFeeBean.getEnd_num());
+			}
+
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
 	}
 
 	@Autowired
